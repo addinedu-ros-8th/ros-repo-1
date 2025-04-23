@@ -17,8 +17,6 @@
 import sys
 import os
 
-from PyQt6.QtNetwork import QTcpSocket
-
 # IMPORT / GUI AND MODULES AND WIDGETS
 # ///////////////////////////////////////////////////////////////
 from modules import *
@@ -29,12 +27,21 @@ os.environ["QT_FONT_DPI"] = "96" # FIX Problem for High DPI and Scale above 100%
 # ///////////////////////////////////////////////////////////////
 widgets = None
 
-from network.Socket import Socket
-from network.PacketBuilder import PacketBuilder
+from network.socket import Socket
+from network.packet import Packet
+from handler.packet_handler import PacketHandler
 
 class MainWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
+
+        self.socket = Socket()
+        self.socket.receive_data.connect(lambda reader: PacketHandler.handle_packet(self.socket, widgets, reader))
+        if not self.socket.connectToServer("127.0.0.1", 9999):
+            QMessageBox.warning(self, "에러", "서버에 연결 할 수 없습니다.")
+            sys.exit(0)
+        else:
+            self.socket.sendData(Packet.client_hello())
 
         # SET AS GLOBAL WIDGETS
         # ///////////////////////////////////////////////////////////////
@@ -97,37 +104,24 @@ class MainWindow(QMainWindow):
         # ///////////////////////////////////////////////////////////////
         widgets.stackedWidget.setCurrentWidget(widgets.page)
 
-        widgets.toggleButton.setEnabled(False)    
-        widgets.btn_dashboard.setEnabled(False)
-        widgets.btn_widgets.setEnabled(False)
-        widgets.btn_logs.setEnabled(False)
-        widgets.btn_settings.setEnabled(False)
+        UIFunctions.setComponentEnabled(self, False)
         widgets.lineEdit_2.setFocus()
 
         widgets.lineEdit_2.returnPressed.connect(self.checkPassword)
 
-        self.socket = Socket()
-        if not self.socket.connectToServer("127.0.0.1", 9999):
-            QMessageBox.warning(self, "에러", "서버에 연결 할 수 없습니다.")
-            widgets.lineEdit_2.setEnabled(False)
-        else:
-            data = PacketBuilder()
-            data.write_command(0x00)
-            data.write_string("test")
-
-            self.socket.sendData(data.get_packet())
 
     def checkPassword(self):
         password = widgets.lineEdit_2.text()
         if password == "1234":
-            widgets.toggleButton.setEnabled(True)    
-            widgets.btn_dashboard.setEnabled(True)
-            widgets.btn_widgets.setEnabled(True)
-            widgets.btn_logs.setEnabled(True)
-            widgets.btn_settings.setEnabled(True)
+            UIFunctions.setComponentEnabled(self, True)
             widgets.lineEdit_2.setText("")
-            widgets.stackedWidget.setCurrentWidget(widgets.home)
-            widgets.btn_dashboard.setStyleSheet(UIFunctions.selectMenu(widgets.btn_dashboard.styleSheet()))
+            # widgets.stackedWidget.setCurrentWidget(widgets.home)
+            # widgets.btn_dashboard.setStyleSheet(UIFunctions.selectMenu(widgets.btn_dashboard.styleSheet()))
+
+            UIFunctions.loading(self)
+        elif password == "":
+            widgets.lineEdit_2.setFocus()
+            QMessageBox.warning(self, "실패", "비밀번호를 입력해주세요.")
         else:
             widgets.lineEdit_2.setText("")
             widgets.lineEdit_2.setFocus()

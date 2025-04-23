@@ -259,3 +259,20 @@ class UIFunctions(MainWindow):
 
     # ///////////////////////////////////////////////////////////////
     # END - GUI DEFINITIONS
+
+    def setComponentEnabled(self, enabled):
+        self.ui.toggleButton.setEnabled(enabled)    
+        self.ui.btn_dashboard.setEnabled(enabled)
+        self.ui.btn_widgets.setEnabled(enabled)
+        self.ui.btn_logs.setEnabled(enabled)
+        self.ui.btn_settings.setEnabled(enabled)
+
+    def loading(self):
+        self.moive = QMovie(":/icons/images/icons/loading.gif")
+        self.moive.setCacheMode(QMovie.CacheAll)
+
+        self.ui.movie_label.setMovie(self.moive)
+
+        self.ui.lineEdit_2.setVisible(False)
+
+        self.moive.start()
