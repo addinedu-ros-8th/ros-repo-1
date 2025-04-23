@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1280</width>
-    <height>720</height>
+    <width>1068</width>
+    <height>644</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -1244,7 +1244,7 @@ Button */
                   <string/>
                  </property>
                  <property name="icon">
-                  <iconset resource="resources.qrc">
+                  <iconset>
                    <normaloff>:/icons/images/icons/icon_close.png</normaloff>:/icons/images/icons/icon_close.png</iconset>
                  </property>
                  <property name="iconSize">
@@ -1661,7 +1661,7 @@ p, li { white-space: pre-wrap; }
                    <string/>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources.qrc">
+                   <iconset>
                     <normaloff>:/icons/images/icons/icon_settings.png</normaloff>:/icons/images/icons/icon_settings.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -1696,7 +1696,7 @@ p, li { white-space: pre-wrap; }
                    <string/>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources.qrc">
+                   <iconset>
                     <normaloff>:/icons/images/icons/icon_minimize.png</normaloff>:/icons/images/icons/icon_minimize.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -1741,7 +1741,7 @@ p, li { white-space: pre-wrap; }
                    <string/>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources.qrc">
+                   <iconset>
                     <normaloff>:/icons/images/icons/icon_maximize.png</normaloff>:/icons/images/icons/icon_maximize.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -1776,7 +1776,7 @@ p, li { white-space: pre-wrap; }
                    <string/>
                   </property>
                   <property name="icon">
-                   <iconset resource="resources.qrc">
+                   <iconset>
                     <normaloff>:/icons/images/icons/icon_close.png</normaloff>:/icons/images/icons/icon_close.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -1876,6 +1876,18 @@ p, li { white-space: pre-wrap; }
                      <property name="currentIndex">
                       <number>0</number>
                      </property>
+                     <widget class="QWidget" name="page">
+                      <widget class="QLineEdit" name="lineEdit_2">
+                       <property name="geometry">
+                        <rect>
+                         <x>410</x>
+                         <y>210</y>
+                         <width>113</width>
+                         <height>27</height>
+                        </rect>
+                       </property>
+                      </widget>
+                     </widget>
                      <widget class="QWidget" name="home">
                       <property name="styleSheet">
                        <string notr="true"/>
@@ -2170,7 +2182,7 @@ p, li { white-space: pre-wrap; }
                                      <string>Open</string>
                                     </property>
                                     <property name="icon">
-                                     <iconset resource="resources.qrc">
+                                     <iconset>
                                       <normaloff>:/icons/images/icons/cil-folder-open.png</normaloff>:/icons/images/icons/cil-folder-open.png</iconset>
                                     </property>
                                    </widget>
@@ -2312,7 +2324,7 @@ p, li { white-space: pre-wrap; }
                                 <rect>
                                  <x>0</x>
                                  <y>0</y>
-                                 <width>350</width>
+                                 <width>274</width>
                                  <height>218</height>
                                 </rect>
                                </property>
@@ -2393,7 +2405,7 @@ p, li { white-space: pre-wrap; }
                                <string>Link Button</string>
                               </property>
                               <property name="icon">
-                               <iconset resource="resources.qrc">
+                               <iconset>
                                 <normaloff>:/icons/images/icons/cil-link.png</normaloff>:/icons/images/icons/cil-link.png</iconset>
                               </property>
                               <property name="description">

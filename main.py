@@ -16,7 +16,6 @@
 
 import sys
 import os
-import platform
 
 # IMPORT / GUI AND MODULES AND WIDGETS
 # ///////////////////////////////////////////////////////////////
@@ -91,9 +90,33 @@ class MainWindow(QMainWindow):
 
         # SET HOME PAGE AND SELECT MENU
         # ///////////////////////////////////////////////////////////////
-        widgets.stackedWidget.setCurrentWidget(widgets.home)
-        widgets.btn_dashboard.setStyleSheet(UIFunctions.selectMenu(widgets.btn_dashboard.styleSheet()))
+        widgets.stackedWidget.setCurrentWidget(widgets.page)
+        # widgets.btn_dashboard.setStyleSheet(UIFunctions.selectMenu(widgets.btn_dashboard.styleSheet()))
 
+        widgets.toggleButton.setEnabled(False)    
+        widgets.btn_dashboard.setEnabled(False)
+        widgets.btn_widgets.setEnabled(False)
+        widgets.btn_logs.setEnabled(False)
+        widgets.btn_settings.setEnabled(False)
+        widgets.lineEdit_2.setFocus()
+
+        widgets.lineEdit_2.returnPressed.connect(self.checkPassword)
+
+    def checkPassword(self):
+        password = widgets.lineEdit_2.text()
+        if password == "1234":
+            widgets.toggleButton.setEnabled(True)    
+            widgets.btn_dashboard.setEnabled(True)
+            widgets.btn_widgets.setEnabled(True)
+            widgets.btn_logs.setEnabled(True)
+            widgets.btn_settings.setEnabled(True)
+            widgets.lineEdit_2.setText("")
+            widgets.stackedWidget.setCurrentWidget(widgets.home)
+            widgets.btn_dashboard.setStyleSheet(UIFunctions.selectMenu(widgets.btn_dashboard.styleSheet()))
+        else:
+            widgets.lineEdit_2.setText("")
+            widgets.lineEdit_2.setFocus()
+            QMessageBox.warning(self, "실패", "비밀번호가 틀렸습니다.")
 
     # BUTTONS CLICK
     # Post here your functions for clicked buttons
