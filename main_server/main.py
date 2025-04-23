@@ -1,4 +1,5 @@
-from handler.ClientHandler import ClientHandler
+from handler.client_handler import ClientHandler
+from database.datbase_connection import NuriDatabase
 import socket
 
 HOST = '0.0.0.0'
@@ -14,6 +15,12 @@ def start_server():
             handler = ClientHandler(conn, addr)
             handler.start()
 
-
 if __name__ == "__main__":
+    NuriDatabase.initialize(
+        host="addinedu.synology.me",
+        user="nuri",
+        password="Nuribot1!@",
+        database="nuri",
+    )
+
     start_server()
