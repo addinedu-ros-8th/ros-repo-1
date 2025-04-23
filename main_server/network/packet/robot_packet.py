@@ -2,9 +2,7 @@ from network.packet_builder import PacketBuilder
 from handler.opcode import Opcode
 
 class RobotPacket:
-
-    @staticmethod
-    def robot_list(self, data):
+    def robot_list(data):
         builder = PacketBuilder()
 
         builder.write_command(Opcode.ROBOT_LIST.value)
