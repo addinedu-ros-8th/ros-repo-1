@@ -13,4 +13,5 @@ class PacketHandler():
                 widgets.bot_list.addItem(packet.read_string())
 
             widgets.bot_list.setCurrentIndex(-1)
+            widgets.movie_label.deleteLater()
             widgets.stackedWidget.setCurrentWidget(widgets.home)
