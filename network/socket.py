@@ -28,7 +28,6 @@ class Socket(QTcpSocket):
             data = self.socket.readAll()
 
             reader = PacketReader(data)
-            print(reader)
 
             self.receive_data.emit(reader)
             
