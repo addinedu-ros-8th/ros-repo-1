@@ -1,22 +1,16 @@
 class ClientManager:
     def __init__(self):
-        self.clients = {}
+        self.clients = set()
 
-    def register(self, handler, server=None):
-        if server is not None:
-            self.clients[server] = handler
-        else:
-            self.clients[handler.addr] = handler
+    def register(self, handler):
+        self.clients.add(handler)
 
     def unregister(self, handler):
-        self.clients.pop(handler.addr, None)
-
-    def get(self, addr):
-        return self.clients.get(addr)
+        self.clients.discard(handler)
 
     def broadcast(self, data: bytes):
-        for addr, client in list(self.clients.items()):
+        for client in list(self.clients):
             try:
-                client.send(data)
+                client.send_response(data)
             except Exception as e:
-                print(f"[BROADCAST ERROR] {addr} → {e}")
+                print(f"[BROADCAST ERROR] {client.addr} → {e}")
