@@ -403,7 +403,7 @@ class Ui_MainWindow(object):
         self.page = QWidget()
         self.page.setObjectName("page")
         self.lineEdit_2 = QLineEdit(self.page)
-        self.lineEdit_2.setGeometry(QtCore.QRect(320, 200, 190, 30))
+        self.lineEdit_2.setGeometry(QtCore.QRect(320, 170, 190, 30))
         self.lineEdit_2.setObjectName("lineEdit_2")
         self.lineEdit_2.setStyleSheet(u"background-color: rgb(33, 37, 43);")
         self.stackedWidget.addWidget(self.page)
