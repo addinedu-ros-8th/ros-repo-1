@@ -1,6 +1,8 @@
+import socket
+import configparser
+
 from handler.client_handler import ClientHandler
 from database.datbase_connection import NuriDatabase
-import socket
 
 HOST = '0.0.0.0'
 PORT = 9999
@@ -15,12 +17,23 @@ def start_server():
             handler = ClientHandler(conn, addr)
             handler.start()
 
-if __name__ == "__main__":
+def initialize_database():
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+
+    host = config['database']['host']
+    user = config['database']['user']
+    password = config['database']['password']
+    database = config['database']['database']
+
     NuriDatabase.initialize(
-        host="addinedu.synology.me",
-        user="nuri",
-        password="Nuribot1!@",
-        database="nuri",
+        host=host,
+        user=user,
+        password=password,
+        database=database,
     )
+
+if __name__ == "__main__":
+    initialize_database()
 
     start_server()
