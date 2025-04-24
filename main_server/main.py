@@ -4,23 +4,20 @@ import configparser
 from handler.client_handler import ClientHandler
 from database.datbase_connection import NuriDatabase
 
-HOST = '0.0.0.0'
-PORT = 9999
+def start_server(config):
+    host = config['main_server']['host']
+    port = int(config['main_server']['port'])
 
-def start_server():
-    print(f"[SERVER] Starting TCP server on {HOST}:{PORT}")
+    print(f"[SERVER] Starting TCP server on {host}:{port}")
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
-        server.bind((HOST, PORT))
+        server.bind((host, port))
         server.listen()
         while True:
             conn, addr = server.accept()
             handler = ClientHandler(conn, addr)
             handler.start()
 
-def initialize_database():
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-
+def initialize_database(config):
     host = config['database']['host']
     user = config['database']['user']
     password = config['database']['password']
@@ -34,6 +31,9 @@ def initialize_database():
     )
 
 if __name__ == "__main__":
-    initialize_database()
+    config = configparser.ConfigParser()
+    config.read('config.ini')
 
-    start_server()
+    initialize_database(config)
+
+    start_server(config)
