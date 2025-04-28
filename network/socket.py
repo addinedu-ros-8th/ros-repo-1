@@ -10,7 +10,6 @@ class Socket(QTcpSocket):
     def __init__(self):
         super().__init__()
 
-        self.connected = False
         self.socket = QTcpSocket()
         self.socket.readyRead.connect(self.readData)
         # self.socket.errorOccurred.connect(self.handleError)
