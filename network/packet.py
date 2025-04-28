@@ -5,13 +5,13 @@ class Packet:
     def client_hello():
         packet = PacketBuilder()
 
-        packet.write_command(Opcode.CLIENT_HELLO.value)
+        packet.write_opcode(Opcode.CLIENT_HELLO.value)
 
         return packet.get_packet()
     
     def robot_list():
         packet = PacketBuilder()
 
-        packet.write_command(Opcode.ROBOT_LIST.value)
+        packet.write_opcode(Opcode.ROBOT_LIST.value)
 
         return packet.get_packet()

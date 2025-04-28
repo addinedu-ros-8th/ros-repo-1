@@ -1,4 +1,4 @@
-from network.packer_reader import PacketReader
+from network.packet_reader import PacketReader
 from handler.packet_handler import PacketHandler
 
 from PyQt6.QtNetwork import QTcpSocket, QAbstractSocket
