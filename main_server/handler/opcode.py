@@ -2,4 +2,5 @@ from enum import Enum
 
 class Opcode(Enum):
     CLIENT_HELLO = 0x00
-    ROBOT_LIST = 0x01
+    RESIDENT_LIST = 0x01
+    SEND_RESIDENT_INFO = 0x02

@@ -8,8 +8,8 @@ class PacketReader:
     def read_opcode(self) -> int:
         return struct.unpack('>H', self.buf.read(2))[0]
     
-    def read_status(self) -> int:
-        return struct.unpack('>H', self.buf.read(2))[0]
+    def read_char(self) -> str:
+        return struct.unpack('>c', self.buf.read(1))[0].decode('ascii')
 
     def read_int(self) -> int:
         return struct.unpack('>i', self.buf.read(4))[0]

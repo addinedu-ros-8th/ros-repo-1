@@ -1,5 +1,6 @@
 import io
 import struct
+import datetime
 
 class PacketBuilder:
     def __init__(self):
@@ -9,7 +10,7 @@ class PacketBuilder:
         self.buf.write(struct.pack('>H', opcode))
 
     def write_status(self, value: int):
-        self.buf.write(struct.pack('>H', value))
+        self.buf.write(struct.pack('>B', value))
 
     def write_int(self, value: int):
         self.buf.write(struct.pack('>i', value))

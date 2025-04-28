@@ -1,58 +1,63 @@
-import threading
-from network.packet_reader import PacketReader
-from network.packet.client_packet import ClientPacket
-from client.client_manager import ClientManager
-from handler.robot_handler import Robot
+from database.datbase_connection import NuriDatabase
 from handler.opcode import Opcode
+from network.packet.client_packet import ClientPacket
 
-class ClientHandler(threading.Thread):
-    client_manager = ClientManager()
+class ClientHandler():
 
-    def __init__(self, conn, addr):
-        super().__init__(daemon=True)
-        self.conn = conn
-        self.addr = addr
+    def handle_packet(handler, reader):
+        opcode = reader.read_opcode()
 
-    def run(self):
-        try:
-            while True:
-                data = self.conn.recv(4096)
-                if not data:
-                    print(f"[CLOSED] {self.addr} 연결 종료")
-                    self.client_manager.unregister(self)
-                    self.conn.close()
-                    break
-
-                reader = PacketReader(data)
-                opcode = reader.read_opcode()
-                self.handle_packet(opcode, reader)
-        except Exception as e:
-            print(f"[ERROR] {self.addr} -> {e}")
-
-    def handle_packet(self, opcode, reader):
         if opcode == Opcode.CLIENT_HELLO.value:     # Client Register
             try:
                 server = reader.read_string()
-                self.client_manager.register(self, server)
+                handler.client_manager.register(handler, server)
             except:
-                self.client_manager.register(self)
+                handler.client_manager.register(handler)
             finally:
-                self.send(ClientPacket.send_hello())
-                print(f"[CONNECTED] {self.addr}")
+                handler.send(ClientPacket.send_hello())
+                print(f"[CONNECTED] {handler.addr}")
+        if opcode == Opcode.RESIDENT_LIST.value:
+            ClientHandler.fetch_resident_list(handler, reader)
+        elif opcode == Opcode.SEND_RESIDENT_INFO.value:
+            ClientHandler.add_new_resident(handler, reader)
 
-        elif opcode == Opcode.ROBOT_LIST.value:     # Request Robot List
-            Robot.fetch_robots(self)
-        elif opcode == 0x02:
-            text = reader.read_string()
-            print(f"[CMD 0x02] Received string: {text}")
-        elif opcode == 0x03:
-            data = reader.read_bytes()
-            print(f"[CMD 0x03] Received {len(data)} bytes of binary data")
-        else:
-            print(f"[UNKNOWN CMD] 0x{opcode:02X}")
 
-    def send(self, data: bytes):
+    @staticmethod
+    def fetch_resident_list(handler, reader):
+        conn = NuriDatabase.get_instance()
+
+        status = 0x00
+
         try:
-            self.conn.sendall(data)
+            query = "SELECT name, birthday bed_id FROM residents"
+            result = conn.fetch_all(query)
+        except:
+            status = 0xFF
+
+        handler.send(ClientPacket.send_resident_list(status, result))
+
+    @staticmethod
+    def add_new_resident(handler, reader):
+        conn = NuriDatabase.get_instance()
+        name = reader.read_string()
+        birthday = reader.read_string()
+        sex = reader.read_char()
+        room_number = reader.read_int()
+        bed_number = reader.read_int()
+
+        status = 0x00
+
+        try:
+            query = "SELECT * FROM residents WHERE name = %s AND birthday = %s"
+            result = conn.fetch_one(query, (name, birthday))
+
+            if result:
+                status = 0x01
+            else:
+                query = "INSERT INTO residents(name, birthday, sex) values(%s, %s, %s)"
+                conn.execute_query(query, (name, birthday, sex))
         except Exception as e:
-            print(f"[SEND ERROR] {self.addr} -> {e}")
+            status = 0xFF
+            print(e)
+
+        handler.send(ClientPacket.send_resident_info_result(status))

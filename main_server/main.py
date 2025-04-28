@@ -1,7 +1,7 @@
 import socket
 import configparser
 
-from handler.client_handler import ClientHandler
+from handler.socket_handler import SocketHandler
 from database.datbase_connection import NuriDatabase
 
 def start_server(config):
@@ -14,7 +14,7 @@ def start_server(config):
         server.listen()
         while True:
             conn, addr = server.accept()
-            handler = ClientHandler(conn, addr)
+            handler = SocketHandler(conn, addr)
             handler.start()
 
 def initialize_database(config):
