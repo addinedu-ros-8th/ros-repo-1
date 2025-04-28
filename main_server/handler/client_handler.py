@@ -24,13 +24,13 @@ class ClientHandler(threading.Thread):
                     break
 
                 reader = PacketReader(data)
-                opcode = reader.read_command()
+                opcode = reader.read_opcode()
                 self.handle_packet(opcode, reader)
         except Exception as e:
             print(f"[ERROR] {self.addr} -> {e}")
 
     def handle_packet(self, opcode, reader):
-        if opcode == Opcode.CLIENT_HELLO.value:      # Client Register
+        if opcode == Opcode.CLIENT_HELLO.value:     # Client Register
             try:
                 server = reader.read_string()
                 self.client_manager.register(self, server)
@@ -40,7 +40,7 @@ class ClientHandler(threading.Thread):
                 self.send(ClientPacket.send_hello())
                 print(f"[CONNECTED] {self.addr}")
 
-        elif opcode == Opcode.ROBOT_LIST.value:    # Request Robot List
+        elif opcode == Opcode.ROBOT_LIST.value:     # Request Robot List
             Robot.fetch_robots(self)
         elif opcode == 0x02:
             text = reader.read_string()
