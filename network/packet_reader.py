@@ -9,7 +9,7 @@ class PacketReader:
         return struct.unpack('>H', self.buf.read(2))[0]
     
     def read_status(self) -> int:
-        return struct.unpack('>H', self.buf.read(2))[0]
+        return struct.unpack('>B', self.buf.read(1))[0]
 
     def read_int(self) -> int:
         return struct.unpack('>i', self.buf.read(4))[0]

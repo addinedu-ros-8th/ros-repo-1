@@ -11,6 +11,9 @@ class PacketBuilder:
     def write_int(self, value: int):
         self.buf.write(struct.pack('>i', value))
 
+    def write_char(self, value: str):
+        self.buf.write(struct.pack('>c', value.encode('ascii')))
+
     def write_string(self, value: str):
         encoded = value.encode('utf-8')
         self.buf.write(struct.pack('>H', len(encoded)))

@@ -262,8 +262,8 @@ class UIFunctions(MainWindow):
 
     def setComponentEnabled(self, enabled):
         self.ui.toggleButton.setEnabled(enabled)    
-        self.ui.btn_dashboard.setEnabled(enabled)
-        self.ui.btn_widgets.setEnabled(enabled)
+        self.ui.btn_home.setEnabled(enabled)
+        self.ui.btn_residents.setEnabled(enabled)
         self.ui.btn_logs.setEnabled(enabled)
         self.ui.btn_settings.setEnabled(enabled)
 
@@ -276,3 +276,49 @@ class UIFunctions(MainWindow):
         self.ui.lineEdit_2.setVisible(False)
 
         self.moive.start()
+
+        self.ui.stackedWidget.setCurrentWidget(self.ui.home)
+        UIFunctions.resetStyle(self, "btn_home")
+        self.ui.btn_home.setStyleSheet(UIFunctions.selectMenu(self.ui.btn_home.styleSheet()))
+
+        # self.socket.sendData(Packet.robot_list())
+
+    def click_info(self):
+        if self.ui.btn_info.text() == "신규등록":
+            self.ui.btn_info.setText("이전화면")
+            self.ui.stackedWidget_2.setCurrentWidget(self.ui.add)
+        elif self.ui.btn_info.text() == "이전화면":
+            self.ui.btn_info.setText("신규등록")
+            self.ui.stackedWidget_2.setCurrentWidget(self.ui.info)
+            self.ui.label_2.clear()
+            self.ui.label_2.setText("사진을 등록해주세요.")
+            self.ui.lineEdit_3.clear()
+            self.ui.date_birth.setDate(QDate.currentDate())
+
+    def click_face(self):
+        file = QFileDialog.getOpenFileName(self, "사진 선택", "./", "Image Files (*.png *.jpg *.jpeg *.bmp *.gif)")
+
+        if file[0]:
+            with open(file[0], 'rb') as f:                
+                self.pixmap = QPixmap(file[0])
+
+                self.ui.label_2.setPixmap(self.pixmap)
+                self.ui.label_2.setScaledContents(True)
+                self.ui.label_2.setFrameShape(QFrame.Shape.NoFrame)
+
+    def click_push(self):
+        if self.ui.lineEdit_3.text() == "":
+            QMessageBox.warning(self, "실패", "이름을 입력해주세요.")
+            self.ui.lineEdit_3.setFocus()
+            return
+        
+        name = self.ui.lineEdit_3.text()
+        birthday = self.ui.date_birth.text()
+        sex = 'M' if self.ui.combo_sex.currentText() == "남자" else 'F'
+        room_number = 101 if self.ui.combo_room.currentIndex() == 0 \
+            else 102 if self.ui.combo_room.currentIndex() == 1 else 103
+        bed_number = int(self.ui.bed_number.text())
+        
+        self.socket.sendData(Packet.send_resident_info(
+            name, birthday, sex, room_number, bed_number
+        ))

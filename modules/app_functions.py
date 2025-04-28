@@ -17,6 +17,7 @@
 # MAIN FILE
 # ///////////////////////////////////////////////////////////////
 from main import *
+from modules import *
 
 # WITH ACCESS TO MAIN WINDOW WIDGETS
 # ///////////////////////////////////////////////////////////////
@@ -30,12 +31,6 @@ class AppFunctions(MainWindow):
         """
 
         # SET MANUAL STYLES
-        self.ui.lineEdit.setStyleSheet("background-color: #6272a4;")
-        self.ui.pushButton.setStyleSheet("background-color: #6272a4;")
-        self.ui.plainTextEdit.setStyleSheet("background-color: #6272a4;")
-        self.ui.tableWidget.setStyleSheet("QScrollBar:vertical { background: #6272a4; } QScrollBar:horizontal { background: #6272a4; }")
-        self.ui.scrollArea.setStyleSheet("QScrollBar:vertical { background: #6272a4; } QScrollBar:horizontal { background: #6272a4; }")
-        self.ui.comboBox.setStyleSheet("background-color: #6272a4;")
-        self.ui.horizontalScrollBar.setStyleSheet("background-color: #6272a4;")
-        self.ui.verticalScrollBar.setStyleSheet("background-color: #6272a4;")
-        self.ui.commandLinkButton.setStyleSheet("color: #ff79c6;")
+        self.ui.btn_info.clicked.connect(lambda: UIFunctions.click_info(self))
+        self.ui.btn_face.clicked.connect(lambda: UIFunctions.click_face(self))
+        self.ui.btn_push.clicked.connect(lambda: UIFunctions.click_push(self))
