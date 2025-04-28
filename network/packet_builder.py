@@ -5,7 +5,7 @@ class PacketBuilder:
     def __init__(self):
         self.buf = io.BytesIO()
 
-    def write_command(self, command: int):
+    def write_opcode(self, command: int):
         self.buf.write(struct.pack('>H', command))
 
     def write_int(self, value: int):
