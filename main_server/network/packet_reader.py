@@ -5,7 +5,10 @@ class PacketReader:
     def __init__(self, data: bytes):
         self.buf = io.BytesIO(data)
 
-    def read_command(self) -> int:
+    def read_opcode(self) -> int:
+        return struct.unpack('>H', self.buf.read(2))[0]
+    
+    def read_status(self) -> int:
         return struct.unpack('>H', self.buf.read(2))[0]
 
     def read_int(self) -> int:

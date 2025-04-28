@@ -6,7 +6,7 @@ class ClientPacket:
     def send_hello():
         packet = PacketBuilder()
 
-        packet.write_command(Opcode.CLIENT_HELLO.value)
+        packet.write_opcode(Opcode.CLIENT_HELLO.value)
         packet.write_int(1)
 
         return packet.get_packet()
