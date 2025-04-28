@@ -5,7 +5,7 @@ class RobotPacket:
     def robot_list(data):
         builder = PacketBuilder()
 
-        builder.write_command(Opcode.ROBOT_LIST.value)
+        builder.write_opcode(Opcode.ROBOT_LIST.value)
         builder.write_int(len(data))
         for idx in range(len(data)):
             builder.write_string(data[idx][1])
