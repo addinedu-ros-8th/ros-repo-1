@@ -1,7 +1,8 @@
 from network.packet_reader import PacketReader
 
+import struct
 from PyQt6.QtNetwork import QTcpSocket, QAbstractSocket
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import pyqtSignal, QByteArray
 
 class Socket(QTcpSocket):
     receive_data = pyqtSignal(object)
@@ -22,13 +23,34 @@ class Socket(QTcpSocket):
         return True
     
     def readData(self):
-        while self.socket.bytesAvailable() > 0:
-            data = self.socket.readAll()
+        if not hasattr(self, 'buffer'):
+            self.buffer = QByteArray()
 
-            reader = PacketReader(data)
+        self.buffer += self.socket.readAll()
 
+        while True:
+            if self.buffer.size() < 4:
+                break
+
+            length_bytes = self.buffer.mid(0, 4)
+            packet_size = struct.unpack('>I', bytes(length_bytes))[0]
+
+            if self.buffer.size() < 4 + packet_size:
+                # 아직 패킷 전체가 도착 안 했음
+                break
+
+            # 패킷 데이터 추출
+            packet_data = self.buffer.mid(4, packet_size)
+
+            # PacketReader에 넘기기
+            reader = PacketReader(bytes(packet_data))
             self.receive_data.emit(reader)
-            
+
+            # 읽은 데이터 버퍼에서 제거
+            self.buffer = self.buffer.mid(4 + packet_size)
+
     def sendData(self, data):
         if self.socket.state() == QAbstractSocket.SocketState.ConnectedState:
-            self.socket.write(data)
+            packet_length = len(data)
+            full_data = struct.pack('>I', packet_length) + data
+            self.socket.write(full_data)
