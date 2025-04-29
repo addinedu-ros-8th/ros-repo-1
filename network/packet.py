@@ -9,13 +9,14 @@ class Packet:
 
         return packet.get_packet()
     
-    def request_resident_list(name=None):
+    def request_resident_list(name=None, check=None):
         packet = PacketBuilder()
 
         packet.write_opcode(Opcode.RESIDENT_LIST.value)
         if name is None:
             name = ""
         packet.write_string(name)
+        packet.write_bool(check)
 
         return packet.get_packet()
     
@@ -37,6 +38,15 @@ class Packet:
 
         packet.write_opcode(Opcode.REQUEST_RESIDENT_INFO.value)
         packet.write_string(resident_name)
+        packet.write_string(birthday)
+
+        return packet.get_packet()
+    
+    def request_discharge(name, birthday):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.REQUEST_DISCHARGE.value)
+        packet.write_string(name)
         packet.write_string(birthday)
 
         return packet.get_packet()
