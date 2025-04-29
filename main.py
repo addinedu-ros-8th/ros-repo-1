@@ -146,7 +146,7 @@ class MainWindow(QMainWindow):
 
         # SHOW NEW PAGE
         if btnName == "btn_logs":
-            widgets.stackedWidget.setCurrentWidget(widgets.new_page) # SET PAGE
+            widgets.stackedWidget.setCurrentWidget(widgets.logs) # SET PAGE
             UIFunctions.resetStyle(self, btnName) # RESET ANOTHERS BUTTONS SELECTED
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet())) # SELECT MENU
 
