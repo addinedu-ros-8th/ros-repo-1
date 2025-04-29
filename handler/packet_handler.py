@@ -65,6 +65,14 @@ class PacketHandler():
             if status == 0x00:
                 name = packet.read_string()
 
-                QMessageBox.information(None, "퇴소완료", name + "님을 퇴소처리하였습니다.")
+                QMessageBox.information(None, "성공", name + "님을 퇴소처리하였습니다.")
             else:
                 QMessageBox.warning(None, "에러", "퇴소처리에 실패했습니다. 다시 시도해주세요.")
+        elif opcode == Opcode.UPDATE_RESIDENT_INFO.value:
+            status = packet.read_status()
+
+            if status == 0x00:
+                QMessageBox.information(None, "성공", "정보를 수정했습니다.")
+                parent.socket.sendData(Packet.request_resident_list())
+            else:
+                QMessageBox.warning(None, "에러", "입소자 정보 수정에 실패했습니다. 다시 시도해주세요.")
