@@ -25,13 +25,20 @@ class PacketHandler():
             if status == 0x00:
                 parent.ui.tbResidentList.clearContents()
                 parent.ui.tbResidentList.setRowCount(0)
-                for idx in range(packet.read_int()):
+                count = packet.read_int()
+                if count == 0:
+                    QMessageBox.information(None, "에러", "조회된 입소자가 없습니다.")
+                    return
+                
+                for idx in range(count):
                     parent.ui.tbResidentList.insertRow(idx)
                     name = packet.read_string()
                     birthday = packet.read_string()
+                    sex = "남성" if packet.read_char() == 'M' else "여성"
 
                     parent.ui.tbResidentList.setItem(idx, 0, QTableWidgetItem(name))
-                    parent.ui.tbResidentList.setItem(idx, 1, QTableWidgetItem(birthday))
+                    parent.ui.tbResidentList.setItem(idx, 1, QTableWidgetItem(sex))
+                    parent.ui.tbResidentList.setItem(idx, 2, QTableWidgetItem(birthday))
             elif status == 0xFF:
                 QMessageBox.warning(None, "에러", "입소자 목록 조회에 실패했습니다. 다시 시도해주세요.")
         elif opcode == Opcode.REQUEST_RESIDENT_INFO.value:
