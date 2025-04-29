@@ -18,8 +18,8 @@ class ClientHandler():
             finally:
                 handler.send(ClientPacket.send_hello())
                 print(f"[CONNECTED] {handler.addr}")
-        if opcode == Opcode.RESIDENT_LIST.value:
-            ClientHandler.fetch_resident_list(handler)
+        if opcode in (Opcode.RESIDENT_LIST.value, Opcode.SEARCH_RESIDENT.value):
+            ClientHandler.fetch_resident_list(handler, reader)
         elif opcode == Opcode.SEND_RESIDENT_INFO.value:
             ClientHandler.add_new_resident(handler, reader)
         elif opcode == Opcode.REQUEST_RESIDENT_INFO.value:
@@ -27,16 +27,26 @@ class ClientHandler():
 
 
     @staticmethod
-    def fetch_resident_list(handler):
+    def fetch_resident_list(handler, reader):
         conn = NuriDatabase.get_instance()
 
         status = 0x00
 
+        name = reader.read_string()
+        result = None
+        params = ()
+
         try:
-            query = "SELECT name, birthday bed_id FROM residents"
-            result = conn.fetch_all(query)
+            query = "SELECT name, birthday, sex FROM residents"
+            if name != "":
+                query += " WHERE name like %s"
+                params = (f"%{name}%",)
+
+            result = conn.fetch_all(query, params)
         except:
             status = 0xFF
+
+        print(result)
 
         handler.send(ClientPacket.send_resident_list(status, result))
 
@@ -90,7 +100,7 @@ class ClientHandler():
                     WHERE r.name = %s and r.birthday = %s and r.id = f.user_id
                     """
             result = conn.fetch_one(query, (name, birthday))
-            
+
         except Exception as e:
             status = 0xFF
 

@@ -22,6 +22,7 @@ class ClientPacket:
             for row in result:
                 packet.write_string(row[0])
                 packet.write_string(row[1].strftime('%Y-%m-%d'))
+                packet.write_char(row[2])
 
         return packet.get_packet()
     
