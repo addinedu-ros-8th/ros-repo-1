@@ -21,3 +21,15 @@ class PacketReader:
     def read_bytes(self) -> bytes:
         length = struct.unpack('>I', self.buf.read(4))[0]
         return self.buf.read(length)
+    
+    def read_image(self) -> bytes:
+        length_bytes = self.buf.read(4)
+        if len(length_bytes) < 4:
+            raise ValueError("Not enough data to read image length.")
+        
+        length = struct.unpack('>I', length_bytes)[0]
+        image_data = self.buf.read(length)
+        if len(image_data) < length:
+            raise ValueError("Not enough image data read.")
+        
+        return image_data

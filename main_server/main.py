@@ -8,14 +8,18 @@ def start_server(config):
     host = config['main_server']['host']
     port = int(config['main_server']['port'])
 
-    print(f"[SERVER] Starting TCP server on {host}:{port}")
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
-        server.bind((host, port))
-        server.listen()
-        while True:
-            conn, addr = server.accept()
-            handler = SocketHandler(conn, addr)
-            handler.start()
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
+            server.bind((host, port))
+            print(f"[SERVER] Starting TCP server on {host}:{port}")
+            server.listen()
+            while True:
+                conn, addr = server.accept()
+                handler = SocketHandler(conn, addr)
+                handler.start()
+            
+    except Exception as e:
+        print(f"{e}")
 
 def initialize_database(config):
     host = config['database']['host']
