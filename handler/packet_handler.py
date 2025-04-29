@@ -1,7 +1,7 @@
 from handler.opcode import Opcode
+from network.packet import Packet
 
-from PyQt6.QtWidgets import QMessageBox
-from PySide6.QtWidgets import QTableWidgetItem
+from PySide6.QtWidgets import QTableWidgetItem, QMessageBox, QFrame
 
 class PacketHandler():
     def handle_packet(socket, parent, packet):
@@ -12,6 +12,8 @@ class PacketHandler():
             
             if status == 0x00:
                 QMessageBox.information(None, "성공", "신규 입소자가 등록되었습니다.")
+                socket.sendData(Packet.request_resident_list())
+                parent.ui.btn_info.click()
             elif status == 0x01:
                 QMessageBox.warning(None, "실패", "이미 등록되어 있는 입소자입니다.")
             elif status == 0xFF:
@@ -32,3 +34,21 @@ class PacketHandler():
                     parent.ui.tbResidentList.setItem(idx, 1, QTableWidgetItem(birthday))
             elif status == 0xFF:
                 QMessageBox.warning(None, "에러", "입소자 목록 조회에 실패했습니다. 다시 시도해주세요.")
+        elif opcode == Opcode.REQUEST_RESIDENT_INFO.value:
+            status = packet.read_status()
+
+            if status == 0x00:
+                name = packet.read_string()
+                sex = packet.read_char()
+                birthday = packet.read_string()
+                face = packet.read_image()
+                
+                parent.ui.label_8.setPixmap(face)
+                parent.ui.label_8.setScaledContents(True)
+                parent.ui.label_8.setFrameShape(QFrame.Shape.NoFrame)
+
+                parent.ui.lineEdit_4.setText(name)
+                index = 0 if sex == 'M' else 1
+                parent.ui.combo_sex_2.setCurrentIndex(index)
+            else:
+                QMessageBox.warning(None, "에러", "입소자 상세조회에 실패했습니다. 다시 시도해주세요.")

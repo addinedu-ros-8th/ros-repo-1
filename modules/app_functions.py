@@ -34,3 +34,4 @@ class AppFunctions(MainWindow):
         self.ui.btn_info.clicked.connect(lambda: UIFunctions.click_info(self))
         self.ui.btn_face.clicked.connect(lambda: UIFunctions.click_face(self))
         self.ui.btn_push.clicked.connect(lambda: UIFunctions.click_push(self))
+        self.ui.tbResidentList.itemSelectionChanged.connect(lambda: UIFunctions.click_table(self))

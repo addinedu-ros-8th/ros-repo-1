@@ -311,14 +311,30 @@ class UIFunctions(MainWindow):
             QMessageBox.warning(self, "실패", "이름을 입력해주세요.")
             self.ui.lineEdit_3.setFocus()
             return
+        face = self.ui.label_2.pixmap()
+        if face.isNull():
+            QMessageBox.warning(self, "실패", "사진을 등록해주세요.")
+            return
         
         name = self.ui.lineEdit_3.text()
         birthday = self.ui.date_birth.text()
-        sex = 'M' if self.ui.combo_sex.currentText() == "남자" else 'F'
+        sex = 'M' if self.ui.combo_sex.currentText() == "남성" else 'F'
         room_number = 101 if self.ui.combo_room.currentIndex() == 0 \
             else 102 if self.ui.combo_room.currentIndex() == 1 else 103
         bed_number = int(self.ui.bed_number.text())
         
         self.socket.sendData(Packet.send_resident_info(
-            name, birthday, sex, room_number, bed_number
+            name, birthday, sex, room_number, bed_number, face
         ))
+
+    def click_table(self):
+        self.ui.info.setEnabled(True)
+        selected_indexes = self.ui.tbResidentList.selectionModel().selectedRows()
+        if not selected_indexes:
+            return
+        
+        row = selected_indexes[0].row()
+        name = self.ui.tbResidentList.item(row, 0).text()
+        birth = self.ui.tbResidentList.item(row, 1).text()
+
+        self.socket.sendData(Packet.request_resident_info(name, birth))

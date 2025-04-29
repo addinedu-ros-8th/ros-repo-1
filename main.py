@@ -35,20 +35,20 @@ class MainWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
 
-        self.socket = Socket()
-        self.socket.receive_data.connect(lambda reader: PacketHandler.handle_packet(self.socket, widgets, reader))
-        if not self.socket.connectToServer("127.0.0.1", 9999):
-            QMessageBox.warning(self, "에러", "서버에 연결 할 수 없습니다.")
-            sys.exit(0)
-        else:
-            self.socket.sendData(Packet.client_hello())
-
         # SET AS GLOBAL WIDGETS
         # ///////////////////////////////////////////////////////////////
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         global widgets
         widgets = self.ui
+
+        self.socket = Socket()
+        self.socket.receive_data.connect(lambda reader: PacketHandler.handle_packet(self.socket, self, reader))
+        if not self.socket.connectToServer("127.0.0.1", 9999):
+            QMessageBox.warning(self, "에러", "서버에 연결 할 수 없습니다.")
+            sys.exit(0)
+        else:
+            self.socket.sendData(Packet.client_hello())
 
         # USE CUSTOM TITLE BAR | USE AS "False" FOR MAC OR LINUX
         # ///////////////////////////////////////////////////////////////
@@ -70,16 +70,12 @@ class MainWindow(QMainWindow):
         # ///////////////////////////////////////////////////////////////
         UIFunctions.uiDefinitions(self)
 
-        # QTableWidget PARAMETERS
-        # ///////////////////////////////////////////////////////////////
-        widgets.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
         # BUTTONS CLICK
         # ///////////////////////////////////////////////////////////////
 
         # LEFT MENUS
-        widgets.btn_dashboard.clicked.connect(self.buttonClick)
-        widgets.btn_widgets.clicked.connect(self.buttonClick)
+        widgets.btn_home.clicked.connect(self.buttonClick)
+        widgets.btn_residents.clicked.connect(self.buttonClick)
         widgets.btn_logs.clicked.connect(self.buttonClick)
         widgets.btn_settings.clicked.connect(self.buttonClick)
 
@@ -108,7 +104,7 @@ class MainWindow(QMainWindow):
         widgets.lineEdit_2.setFocus()
 
         widgets.lineEdit_2.returnPressed.connect(self.checkPassword)
-
+        # PacketHandler.signal.connect(self.updateGUI)
 
     def checkPassword(self):
         password = widgets.lineEdit_2.text()
@@ -136,16 +132,17 @@ class MainWindow(QMainWindow):
         btnName = btn.objectName()
 
         # SHOW HOME PAGE
-        if btnName == "btn_dashboard":
+        if btnName == "btn_home":
             widgets.stackedWidget.setCurrentWidget(widgets.home)
             UIFunctions.resetStyle(self, btnName)
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))
 
         # SHOW WIDGETS PAGE
-        if btnName == "btn_widgets":
-            widgets.stackedWidget.setCurrentWidget(widgets.widgets)
+        if btnName == "btn_residents":
+            widgets.stackedWidget.setCurrentWidget(widgets.residents)
             UIFunctions.resetStyle(self, btnName)
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))
+            self.socket.sendData(Packet.request_resident_list())
 
         # SHOW NEW PAGE
         if btnName == "btn_logs":
