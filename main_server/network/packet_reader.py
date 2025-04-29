@@ -13,6 +13,12 @@ class PacketReader:
 
     def read_int(self) -> int:
         return struct.unpack('>i', self.buf.read(4))[0]
+    
+    def read_bool(self) -> bool:
+        byte = self.buf.read(1)
+        
+        return byte != b'\x00'
+
 
     def read_string(self) -> str:
         length = struct.unpack('>H', self.buf.read(2))[0]
