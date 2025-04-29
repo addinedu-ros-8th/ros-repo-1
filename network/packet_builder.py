@@ -13,6 +13,9 @@ class PacketBuilder:
     def write_int(self, value: int):
         self.buf.write(struct.pack('>i', value))
 
+    def write_bool(self, value: bool):
+        self.buf.write(b'\x01' if value else b'\x00')
+
     def write_char(self, value: str):
         self.buf.write(struct.pack('>c', value.encode('ascii')))
 
