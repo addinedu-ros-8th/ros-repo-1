@@ -55,3 +55,11 @@ class ClientPacket:
         packet.write_string(name)
 
         return packet.get_packet()
+    
+    def send_update_resident_info_result(status):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.UPDATE_RESIDENT_INFO.value)
+        packet.write_status(status)
+
+        return packet.get_packet()
