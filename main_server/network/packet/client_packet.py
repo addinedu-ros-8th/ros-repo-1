@@ -46,3 +46,12 @@ class ClientPacket:
             packet.write_bytes(result[3])   # Images
 
         return packet.get_packet()
+    
+    def send_discharge_result(status, name):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.REQUEST_DISCHARGE.value)
+        packet.write_status(status)
+        packet.write_string(name)
+
+        return packet.get_packet()
