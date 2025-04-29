@@ -1,3 +1,5 @@
+import datetime
+
 from database.datbase_connection import NuriDatabase
 from handler.opcode import Opcode
 from network.packet.client_packet import ClientPacket
@@ -18,12 +20,14 @@ class ClientHandler():
             finally:
                 handler.send(ClientPacket.send_hello())
                 print(f"[CONNECTED] {handler.addr}")
-        if opcode in (Opcode.RESIDENT_LIST.value, Opcode.SEARCH_RESIDENT.value):
+        if opcode == Opcode.RESIDENT_LIST.value:
             ClientHandler.fetch_resident_list(handler, reader)
         elif opcode == Opcode.SEND_RESIDENT_INFO.value:
             ClientHandler.add_new_resident(handler, reader)
         elif opcode == Opcode.REQUEST_RESIDENT_INFO.value:
             ClientHandler.fetch_resident_info(handler, reader)
+        elif opcode == Opcode.REQUEST_DISCHARGE.value:
+            ClientHandler.discharge_resident(handler, reader)
 
 
     @staticmethod
@@ -33,6 +37,7 @@ class ClientHandler():
         status = 0x00
 
         name = reader.read_string()
+        check = reader.read_bool()
         result = None
         params = ()
 
@@ -42,11 +47,13 @@ class ClientHandler():
                 query += " WHERE name like %s"
                 params = (f"%{name}%",)
 
+            if not check:
+                join = " WHERE" if name == "" else " AND"
+                query += join + " discharge_date is null"
+
             result = conn.fetch_all(query, params)
         except:
             status = 0xFF
-
-        print(result)
 
         handler.send(ClientPacket.send_resident_list(status, result))
 
@@ -59,9 +66,6 @@ class ClientHandler():
         room_number = reader.read_int()
         bed_number = reader.read_int()
         face = reader.read_image()
-
-        with open('face.png', 'wb') as f:
-            f.write(face)
 
         status = 0x00
 
@@ -105,3 +109,21 @@ class ClientHandler():
             status = 0xFF
 
         handler.send(ClientPacket.send_resident_info(status, result))
+
+    @staticmethod
+    def discharge_resident(handler, reader):
+        conn = NuriDatabase.get_instance()
+        name = reader.read_string()
+        birthday = reader.read_string()
+        date = datetime.datetime.now()
+
+        status = 0x00
+
+        try:
+            query = "UPDATE residents SET discharge_date = %s WHERE name = %s and birthday = %s"
+            conn.execute_query(query, (date, name, birthday))
+        except:
+            status = 0xFF
+            conn.rollback()
+
+        handler.send(ClientPacket.send_discharge_result(status, name))
