@@ -339,7 +339,17 @@ class UIFunctions(MainWindow):
 
         self.socket.sendData(Packet.request_resident_info(name, birth))
 
+    def click_discharge(self):
+        name = self.ui.lineEdit_4.text()
+        retval = QMessageBox.question(self, "재확인", name + "님을 퇴소처리 하시겠습니까?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        
+        if retval == QMessageBox.Yes:
+            birthday = self.ui.date_birth_2.text()
+            
+            self.socket.sendData(Packet.request_discharge(name, birthday))
+
     def click_search(self):
         name = self.ui.lineEdit.text()
+        check = self.ui.check_discharge.isChecked()
 
-        self.socket.sendData(Packet.request_resident_list(name))
+        self.socket.sendData(Packet.request_resident_list(name, check))
