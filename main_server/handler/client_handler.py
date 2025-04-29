@@ -28,6 +28,8 @@ class ClientHandler():
             ClientHandler.fetch_resident_info(handler, reader)
         elif opcode == Opcode.REQUEST_DISCHARGE.value:
             ClientHandler.discharge_resident(handler, reader)
+        elif opcode == Opcode.UPDATE_RESIDENT_INFO.value:
+            ClientHandler.update_resident_info(handler, reader)
 
 
     @staticmethod
@@ -127,3 +129,24 @@ class ClientHandler():
             conn.rollback()
 
         handler.send(ClientPacket.send_discharge_result(status, name))
+
+    @staticmethod
+    def update_resident_info(handler, reader):
+        conn = NuriDatabase.get_instance()
+        name = reader.read_string()
+        birthday = reader.read_string()
+        sex = reader.read_char()
+        bed = reader.read_int()
+        room = reader.read_int()
+
+        status = 0x00
+
+        try:
+            query = "UPDATE residents SET sex = %s WHERE name = %s and birthday = %s"
+            conn.execute_query(query, (sex, name, birthday))
+        except:
+            status = 0xFF
+            conn.rollback()
+
+        handler.send(ClientPacket.send_update_resident_info_result(status))
+        
