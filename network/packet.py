@@ -9,10 +9,13 @@ class Packet:
 
         return packet.get_packet()
     
-    def request_resident_list():
+    def request_resident_list(name=None):
         packet = PacketBuilder()
 
         packet.write_opcode(Opcode.RESIDENT_LIST.value)
+        if name is None:
+            name = ""
+        packet.write_string(name)
 
         return packet.get_packet()
     

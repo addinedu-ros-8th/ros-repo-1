@@ -335,6 +335,11 @@ class UIFunctions(MainWindow):
         
         row = selected_indexes[0].row()
         name = self.ui.tbResidentList.item(row, 0).text()
-        birth = self.ui.tbResidentList.item(row, 1).text()
+        birth = self.ui.tbResidentList.item(row, 2).text()
 
         self.socket.sendData(Packet.request_resident_info(name, birth))
+
+    def click_search(self):
+        name = self.ui.lineEdit.text()
+
+        self.socket.sendData(Packet.request_resident_list(name))
