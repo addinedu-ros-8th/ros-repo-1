@@ -1,5 +1,7 @@
 import io
 import struct
+from PySide6.QtGui import QPixmap
+from PySide6.QtCore import QBuffer, QIODevice
 
 class PacketBuilder:
     def __init__(self):
@@ -22,6 +24,17 @@ class PacketBuilder:
     def write_bytes(self, data: bytes):
         self.buf.write(struct.pack('>I', len(data)))
         self.buf.write(data)
+    
+    def write_image(self, pixmap: QPixmap):
+        buffer = QBuffer()
+        buffer.open(QIODevice.OpenModeFlag.ReadWrite)
+
+        image = pixmap.toImage()
+        if not image.save(buffer, "PNG"):
+            raise ValueError("Failed to save QPixmap to buffer.")
+        
+        image_data = buffer.data().data()  # QByteArray → bytes
+        self.write_bytes(image_data)
 
     def get_packet(self) -> bytes:
         return self.buf.getvalue()
