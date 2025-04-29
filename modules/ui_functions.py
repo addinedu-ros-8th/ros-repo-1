@@ -353,3 +353,12 @@ class UIFunctions(MainWindow):
         check = self.ui.check_discharge.isChecked()
 
         self.socket.sendData(Packet.request_resident_list(name, check))
+    
+    def click_modify(self):
+        name = self.ui.lineEdit_4.text()
+        sex = 'M' if self.ui.combo_sex_2.currentText() == "남성" else 'F'
+        birthday = self.ui.date_birth_2.text()
+
+        self.socket.sendData(Packet.update_resident_info(
+            name, birthday, sex, 0, 0
+        ))
