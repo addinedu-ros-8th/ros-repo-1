@@ -59,3 +59,12 @@ class PacketHandler():
                 parent.ui.combo_sex_2.setCurrentIndex(index)
             else:
                 QMessageBox.warning(None, "에러", "입소자 상세조회에 실패했습니다. 다시 시도해주세요.")
+        elif opcode == Opcode.REQUEST_DISCHARGE.value:
+            status = packet.read_status()
+
+            if status == 0x00:
+                name = packet.read_string()
+
+                QMessageBox.information(None, "퇴소완료", name + "님을 퇴소처리하였습니다.")
+            else:
+                QMessageBox.warning(None, "에러", "퇴소처리에 실패했습니다. 다시 시도해주세요.")
