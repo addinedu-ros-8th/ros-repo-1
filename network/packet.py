@@ -16,7 +16,7 @@ class Packet:
 
         return packet.get_packet()
     
-    def send_resident_info(resident_name, birthday, sex, room_number, bed_number):
+    def send_resident_info(resident_name, birthday, sex, room_number, bed_number, face):
         packet = PacketBuilder()
 
         packet.write_opcode(Opcode.SEND_RESIDENT_INFO.value)
@@ -25,5 +25,15 @@ class Packet:
         packet.write_char(sex)
         packet.write_int(room_number)
         packet.write_int(bed_number)
+        packet.write_image(face)
+
+        return packet.get_packet()
+    
+    def request_resident_info(resident_name, birthday):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.REQUEST_RESIDENT_INFO.value)
+        packet.write_string(resident_name)
+        packet.write_string(birthday)
 
         return packet.get_packet()
