@@ -50,3 +50,15 @@ class Packet:
         packet.write_string(birthday)
 
         return packet.get_packet()
+    
+    def update_resident_info(resident_name, birthday, sex, room_number, bed_number):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.UPDATE_RESIDENT_INFO.value)
+        packet.write_string(resident_name)
+        packet.write_string(birthday)
+        packet.write_char(sex)
+        packet.write_int(room_number)
+        packet.write_int(bed_number)
+
+        return packet.get_packet()
