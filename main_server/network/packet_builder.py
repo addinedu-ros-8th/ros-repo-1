@@ -1,19 +1,21 @@
 import io
 import struct
-import datetime
 
 class PacketBuilder:
     def __init__(self):
         self.buf = io.BytesIO()
 
     def write_opcode(self, opcode: int):
-        self.buf.write(struct.pack('>H', opcode))
+        self.buf.write(struct.pack('>B', opcode))
 
     def write_status(self, value: int):
         self.buf.write(struct.pack('>B', value))
 
     def write_char(self, value: str):
         self.buf.write(struct.pack('>c', value.encode('ascii')))
+
+    def write_short(self, value: int):
+        self.buf.write(struct.pack('>H', value))
 
     def write_int(self, value: int):
         self.buf.write(struct.pack('>i', value))
