@@ -8,7 +8,10 @@ class PacketBuilder:
         self.buf = io.BytesIO()
 
     def write_opcode(self, command: int):
-        self.buf.write(struct.pack('>H', command))
+        self.buf.write(struct.pack('>B', command))
+
+    def write_short(self, value: int):
+        self.buf.write(struct.pack('>H', value))
 
     def write_int(self, value: int):
         self.buf.write(struct.pack('>i', value))
