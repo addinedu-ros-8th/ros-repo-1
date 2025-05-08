@@ -41,3 +41,4 @@ class AppFunctions():
         ui.btn_push_2.clicked.connect(lambda: UIFunctions.click_modify(main_window))
         ui.lineEdit.returnPressed.connect(lambda: UIFunctions.click_search(main_window))
         ui.btn_delete.clicked.connect(lambda: UIFunctions.click_delete(main_window))
+        ui.refreshButton.clicked.connect(lambda: UIFunctions.click_refresh(main_window))
