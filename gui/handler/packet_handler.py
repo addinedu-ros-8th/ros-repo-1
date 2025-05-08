@@ -11,12 +11,7 @@ class PacketHandler():
         opcode = packet.read_byte()
 
         if opcode == Opcode.CLIENT_HELLO.value:
-            robots = [
-                {"index": 0, "name": "Robot 1", "status": "online", "battery": "75%"},
-                {"index": 1, "name": "Robot 2", "status": "offline", "battery": "38%"},
-            ]
-
-            UIFunctions.build_robot_list(parent, robots)
+            parent.socket.sendData(Packet.test())
         elif opcode == Opcode.SEND_RESIDENT_INFO.value:
             status = packet.read_byte()
             
@@ -121,6 +116,15 @@ class PacketHandler():
                 print(addr)
 
         elif opcode == 0x99:
-            data = packet.read_string()
+            size = packet.read_byte()
+            robots = []
 
-            QMessageBox.information(None, "테스트", data)
+            for index in range(size):
+                id = packet.read_byte()
+                status = packet.read_string()
+                battery = packet.read_byte()
+                online = "online" if packet.read_bool() else "offline"
+
+                robots.append({'index' : index, 'name' : f"Robot {id}", 'status' : status, 'battery' : f"{battery}%", 'online' : online})
+
+            UIFunctions.build_robot_list(parent, robots)
