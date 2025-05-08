@@ -11,7 +11,7 @@ class PacketHandler():
         opcode = packet.read_byte()
 
         if opcode == Opcode.CLIENT_HELLO.value:
-            parent.socket.sendData(Packet.test())
+            parent.socket.sendData(Packet.request_robot_list())
         elif opcode == Opcode.SEND_RESIDENT_INFO.value:
             status = packet.read_byte()
             
