@@ -34,8 +34,8 @@ class ClientHandler():
             ClientHandler.fetch_log_category(handler, reader, node)
         elif opcode == Opcode.DETECTION.value:
             ClientHandler.detection(handler, reader, node)
-        elif opcode == 0x99:
-            ClientHandler.test(handler, reader, node)
+        elif opcode == Opcode.ROBOT_LIST.value:
+            ClientHandler.fetch_robot_list(handler, reader, node)
 
     @staticmethod
     def client_hello(handler, reader, node):
@@ -231,7 +231,7 @@ class ClientHandler():
         handler.client_manager.broadcast(packet)
 
     @staticmethod
-    def test(handler, reader, node):
+    def fetch_robot_list(handler, reader, node):
         robots = node.robot_manager.get_all_robots()
 
         handler.send(ClientPacket.send_robot_list(robots))

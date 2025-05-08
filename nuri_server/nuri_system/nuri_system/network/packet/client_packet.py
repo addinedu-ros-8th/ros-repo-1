@@ -100,7 +100,7 @@ class ClientPacket:
     def send_robot_list(robots):
         packet = PacketBuilder()
 
-        packet.write_opcode(Opcode.ROBOT_LIST)
+        packet.write_opcode(Opcode.ROBOT_LIST.value)
         size = len(robots)
         packet.write_byte(size)
 
