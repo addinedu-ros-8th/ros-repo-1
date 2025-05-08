@@ -454,8 +454,6 @@ class Ui_MainWindow(object):
         self.robotListLayout = QVBoxLayout(self.robotListContainer)
 
         robots = [
-        {"index": 0, "name": "Robot 1", "status": "online", "battery": "75%"},
-        {"index": 1, "name": "Robot 2", "status": "offline", "battery": "38%"},
         ]
 
         for robot in robots:
@@ -1002,23 +1000,34 @@ class RobotEntry(QWidget):
         self.robot_layout = QVBoxLayout(self)
         self.robot_layout.setContentsMargins(5, 5, 5, 5)
 
-        # 첫 줄: 이름만
+        # 첫 줄: 이름 + 상태
         top_row = QHBoxLayout()
         name_label = QLabel(f"🤖 {robot['name']}")
         name_label.setStyleSheet("padding: 2px;")
         name_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
+        self.status_label = QLabel(f"{robot['status']}")  # 예: 대기 중 / 순찰 중 등
+        self.status_label.setStyleSheet("padding: 2px; color: #aaa;")
+        self.status_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
         top_row.addWidget(name_label)
+        top_row.addWidget(self.status_label)
         self.robot_layout.addLayout(top_row)
 
-        # 둘째 줄: 연결상태 + 배터리 + IP
+        # 둘째 줄: 연결 상태 + 배터리
         bottom_row = QHBoxLayout()
-        status_label = QLabel("🟢 연결됨" if robot["status"] == "online" else "🔴 끊김")
-        battery_label = QLabel(f"🔋 {robot['battery']}")
 
-        for lbl in (status_label, battery_label):
-            lbl.setStyleSheet("padding: 2px; margin-left: 5px; color: gray;")
-            lbl.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-            bottom_row.addWidget(lbl)
+        self.online_label = QLabel("🟢 연결됨" if robot["online"] == "online" else "🔴 끊김")
+        self.online_label.setObjectName("online_label")
+        self.online_label.setStyleSheet("padding: 2px; color: gray;")
+        self.online_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
+        battery_label = QLabel(f"🔋 {robot['battery']}")
+        battery_label.setStyleSheet("padding: 2px; margin-left: 5px; color: gray;")
+        battery_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
+        bottom_row.addWidget(self.online_label)
+        bottom_row.addWidget(battery_label)
 
         self.robot_layout.addLayout(bottom_row)
         self.setCursor(Qt.PointingHandCursor)
