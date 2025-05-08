@@ -234,4 +234,4 @@ class ClientHandler():
     def test(handler, reader, node):
         robots = node.robot_manager.get_all_robots()
 
-        handler.send(ClientPacket.test(robots))
+        handler.send(ClientPacket.send_robot_list(robots))

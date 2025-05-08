@@ -97,10 +97,10 @@ class ClientPacket:
 
         return packet.get_packet()
     
-    def test(robots):
+    def send_robot_list(robots):
         packet = PacketBuilder()
 
-        packet.write_opcode(0x99)
+        packet.write_opcode(Opcode.ROBOT_LIST)
         size = len(robots)
         packet.write_byte(size)
 

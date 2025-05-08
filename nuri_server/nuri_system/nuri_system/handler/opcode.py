@@ -14,5 +14,6 @@ class Opcode(Enum):
     LOG_CATEGORY = 0x20
     
     DETECTION = 0x30
+    REQUEST_VIDEO = 0x31
 
-    TEST = 0x99
+    ROBOT_LIST = 0x40
