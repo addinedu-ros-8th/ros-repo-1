@@ -88,10 +88,9 @@ class Packet:
 
         return packet.get_packet()
     
-    def test(index):
+    def request_robot_list():
         packet = PacketBuilder()
 
-        packet.write_opcode(0x99)
-        packet.write_short(index)
+        packet.write_opcode(Opcode.ROBOT_LIST.value)
 
         return packet.get_packet()

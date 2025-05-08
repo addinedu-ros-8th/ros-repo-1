@@ -283,8 +283,6 @@ class UIFunctions():
         UIFunctions.resetStyle(parent, "btn_home")
         parent.ui.btn_home.setStyleSheet(UIFunctions.selectMenu(parent.ui.btn_home.styleSheet()))
 
-        # parent.socket.sendData(Packet.robot_list())
-
     def click_info(parent):
         if parent.ui.btn_info.text() == "신규등록":
             parent.ui.btn_info.setText("이전화면")
@@ -398,6 +396,8 @@ class UIFunctions():
         parent.ui.label_8.setFrameShape(QFrame.Shape.Box)
         parent.ui.info.setEnabled(False)
 
+    def click_refresh(parent):
+        parent.socket.sendData(packet.Packet.request_robot_list())
 
     def handle_robot_click(parent, index):
-        parent.socket.sendData(packet.Packet.test(index))
+        pass
