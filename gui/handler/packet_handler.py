@@ -115,7 +115,7 @@ class PacketHandler():
             if retval == QMessageBox.Yes:
                 print(addr)
 
-        elif opcode == 0x99:
+        elif opcode == Opcode.ROBOT_LIST.value:
             size = packet.read_byte()
             robots = []
 
