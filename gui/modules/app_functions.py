@@ -32,6 +32,7 @@ class AppFunctions():
 
         ui = main_window.ui
         # SET MANUAL STYLES
+        ui.map = MapDisplay(ui.label_display, u':/images/images/images/map_2.png')
         ui.btn_info.clicked.connect(lambda: UIFunctions.click_info(main_window))
         ui.btn_face.clicked.connect(lambda: UIFunctions.click_face(main_window))
         ui.btn_push.clicked.connect(lambda: UIFunctions.click_push(main_window))
@@ -42,3 +43,7 @@ class AppFunctions():
         ui.lineEdit.returnPressed.connect(lambda: UIFunctions.click_search(main_window))
         ui.btn_delete.clicked.connect(lambda: UIFunctions.click_delete(main_window))
         ui.refreshButton.clicked.connect(lambda: UIFunctions.click_refresh(main_window))
+        ui.label_display.clicked.connect(lambda x, y: UIFunctions.click_map(main_window, x, y))
+        ui.btn_log_search.clicked.connect(lambda: UIFunctions.click_log_search(main_window))
+        ui.patrol_register_button.clicked.connect(lambda: UIFunctions.click_patrol_register(main_window))
+        ui.patrol_cancel_button.clicked.connect(lambda: UIFunctions.click_patrol_cancel(main_window))
