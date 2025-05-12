@@ -30,10 +30,20 @@ class ClientHandler():
             ClientHandler.delete_resident_info(handler, reader)
         elif opcode == Opcode.RESIDENT_HEALTH_INFO.value:
             ClientHandler.update_health_info(handler, reader, node)
+        elif opcode == Opcode.PATROL_LIST.value:
+            ClientHandler.fetch_patrol_schedule(handler, reader, node)
+        elif opcode == Opcode.PATROL_REGIST.value:
+            ClientHandler.regist_patrol(handler, reader, node)
+        elif opcode == Opcode.PATROL_UNREGIST.value:
+            ClientHandler.unregist_patrol(handler, reader, node)
         elif opcode == Opcode.LOG_CATEGORY.value:
             ClientHandler.fetch_log_category(handler, reader, node)
+        elif opcode == Opcode.LOG_SEARCH.value:
+            ClientHandler.fetch_log_list(handler, reader, node)
         elif opcode == Opcode.DETECTION.value:
             ClientHandler.detection(handler, reader, node)
+        elif opcode == Opcode.REQUEST_VIDEO.value:
+            ClientHandler.request_video(handler, reader, node)
         elif opcode == Opcode.ROBOT_LIST.value:
             ClientHandler.fetch_robot_list(handler, reader, node)
 
@@ -220,18 +230,123 @@ class ClientHandler():
         handler.send(ClientPacket.send_log_category(status, type, name))
 
     @staticmethod
+    def fetch_log_list(handler, reader, node):
+        conn = NuriDatabase.get_instance()
+        start = reader.read_string()
+        end = reader.read_string()
+        event_type = reader.read_string()
+        robot = reader.read_byte()
+        keyword = reader.read_string()
+
+        status = 0x00
+        result = None
+
+        param = [start, end]
+
+        try:
+            query = """
+            SELECT e.type, l.robot_id, l.comment, l.created_at 
+            FROM logs l, log_event e 
+            WHERE l.event_id = e.id and l.created_at >= %s or l.created_at <= %s
+            """
+            if event_type != "전체":
+                query += "AND l.event_type = %s "
+                param.append(event_type)
+            if robot != 0:
+                query += "AND l.robot_id = %s "
+                param.append(robot)
+            if keyword != "":
+                query += "AND l.comment LINE '%s' "
+                keyword_param = f"%{keyword}%"
+                param.append(keyword_param)
+
+            result = conn.fetch_all(query, (start, end))
+        except Exception as e:
+            node.get_logger().info(f"{e}")
+            status = 0xFF
+
+        handler.send(ClientPacket.send_log_list(status, result))
+
+    @staticmethod
     def detection(handler, reader, node):
         conn = NuriDatabase.get_instance()
 
         robot_id = reader.read_byte()
         type = reader.read_string()
 
+        # node.get_logger().info(handler.robot_handler.robot_manager.get_robot(robot_id).status)
+
+        handler.robot_handler.robot_manager.update_robot(robot_id, "비상상황")
+
         packet = ClientPacket.send_detection(robot_id, type)
 
         handler.client_manager.broadcast(packet)
+
+        robots = node.robot_manager.get_all_robots()
+        handler.client_manager.broadcast(ClientPacket.send_robot_list(robots))
 
     @staticmethod
     def fetch_robot_list(handler, reader, node):
         robots = node.robot_manager.get_all_robots()
 
         handler.send(ClientPacket.send_robot_list(robots))
+
+    @staticmethod
+    def request_video(handler, reader, node):
+        addr = reader.read_string()
+        robot_id = reader.read_byte()
+
+        pub = node.create_publisher(String, 'emergency_msg', 10)
+        msg = String()
+        msg.data = addr
+        pub.publish(msg)
+
+    @staticmethod
+    def fetch_patrol_schedule(handler, reader, node):
+        conn = NuriDatabase.get_instance()
+
+        status = 0x00
+        result = None
+
+        try:
+            query = "SELECT scheduled_time FROM schedule order by scheduled_time ASC"
+            result = conn.fetch_all(query)
+        except:
+            status = 0xFF
+
+        handler.send(ClientPacket.send_patrol_schedule(status, result))
+
+    @staticmethod
+    def regist_patrol(handler, reader, node):
+        conn = NuriDatabase.get_instance()
+        time = reader.read_string()
+
+        status = 0x00
+
+        try:
+            query = "INSERT INTO schedule(job_id, scheduled_time) VALUES(4, %s)"
+            conn.execute_query(query, (time,))
+        except:
+            conn.rollback()
+            status = 0xFF
+
+        handler.send(ClientPacket.regist_patrol_result(status))
+        handler.robot_handler.update_patrol_time()
+
+    @staticmethod
+    def unregist_patrol(handler, reader, node):
+        conn = NuriDatabase.get_instance()
+        time = reader.read_string()
+
+        status = 0x00
+
+        try:
+            query = "DELETE FROM schedule WHERE scheduled_time = %s"
+            conn.execute_query(query, (time,))
+        except:
+            conn.rollback()
+            status = 0xFF
+
+        handler.send(ClientPacket.unregist_patrol_result(status))
+
+        handler.robot_handler.update_patrol_time()
