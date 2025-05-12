@@ -88,6 +88,21 @@ class ClientPacket:
 
         return packet.get_packet()
     
+    def send_log_list(status, result):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.LOG_SEARCH.value)
+        packet.write_byte(status)
+        if result is not None:
+            packet.write_short(len(result))
+            for item in result:
+                packet.write_string(item[0])
+                packet.write_byte(item[1])
+                packet.write_string(item[2])
+                packet.write_string(item[3].strftime('%F %T'))
+
+        return packet.get_packet()
+    
     def send_detection(robot_id, type):
         packet = PacketBuilder()
 
@@ -110,6 +125,44 @@ class ClientPacket:
                 packet.write_string(robot.status)
                 packet.write_byte(robot.battery)
                 packet.write_bool(robot.online)
+
+        return packet.get_packet()
+    
+    def send_robot_location(robots):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.ROBOT_LOCATION.value)
+        packet.write_short(len(robots))
+        for robot in robots:
+            packet.write_short(robot.x)
+            packet.write_short(robot.y)
+
+        return packet.get_packet()
+    
+    def send_patrol_schedule(status, list=None):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.PATROL_LIST.value)
+        if list is not None:
+            packet.write_byte(len(list))
+            for row in list:
+                packet.write_string(str(row[0]))
+
+        return packet.get_packet()
+    
+    def regist_patrol_result(status):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.PATROL_REGIST.value)
+        packet.write_byte(status)
+
+        return packet.get_packet()
+
+    def unregist_patrol_result(status):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.PATROL_UNREGIST.value)
+        packet.write_byte(status)
 
         return packet.get_packet()
     
