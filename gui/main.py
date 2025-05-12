@@ -21,7 +21,6 @@ import os
 # ///////////////////////////////////////////////////////////////
 from modules import *
 from widgets import *
-from PySide6.QtNetwork import QNetworkInterface, QAbstractSocket
 os.environ["QT_FONT_DPI"] = "96" # FIX Problem for High DPI and Scale above 100%
 
 # SET AS GLOBAL WIDGETS
@@ -29,8 +28,10 @@ os.environ["QT_FONT_DPI"] = "96" # FIX Problem for High DPI and Scale above 100%
 widgets = None
 
 from network.tcp_socket import TCPSocket
+from network.udp_socket import UDPSocket
 from network.packet import Packet
 from handler.packet_handler import PacketHandler
+from handler.emergency_handler import EmergencyHandler
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -51,6 +52,11 @@ class MainWindow(QMainWindow):
         else:
             self.socket.sendData(Packet.client_hello())
 
+        self.udp_socket = UDPSocket()
+        self.udp_socket.receive_image.connect(lambda reader: EmergencyHandler.handle_packet(self, reader))
+        self.is_emergency = False
+        self.emergency = False
+        # self.addr = None
         # USE CUSTOM TITLE BAR | USE AS "False" FOR MAC OR LINUX
         # ///////////////////////////////////////////////////////////////
         Settings.ENABLE_CUSTOM_TITLE_BAR = True
@@ -157,6 +163,8 @@ class MainWindow(QMainWindow):
             widgets.stackedWidget.setCurrentWidget(widgets.settings) # SET PAGE
             UIFunctions.resetStyle(self, btnName) # RESET ANOTHERS BUTTONS SELECTED
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet())) # SELECT MENU
+
+            self.socket.sendData(Packet.request_patrol_schedule())
 
 
     # RESIZE EVENTS
