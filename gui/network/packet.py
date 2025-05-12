@@ -80,11 +80,24 @@ class Packet:
 
         return packet.get_packet()
     
-    def request_video(ipaddress):
+    def request_log_list(start, end, event_type, robot, keyword):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.LOG_SEARCH.value)
+        packet.write_string(start)
+        packet.write_string(end)
+        packet.write_string(event_type)
+        packet.write_byte(robot)
+        packet.write_string(keyword)
+
+        return packet.get_packet()
+    
+    def request_video(ipaddress, robot_id):
         packet = PacketBuilder()
 
         packet.write_opcode(Opcode.REQUEST_VIDEO.value)
         packet.write_string(ipaddress)
+        packet.write_byte(robot_id)
 
         return packet.get_packet()
     
@@ -92,5 +105,28 @@ class Packet:
         packet = PacketBuilder()
 
         packet.write_opcode(Opcode.ROBOT_LIST.value)
+
+        return packet.get_packet()
+    
+    def request_patrol_schedule():
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.PATROL_LIST.value)
+
+        return packet.get_packet()
+    
+    def regist_partrol(time):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.PATROL_REGIST.value)
+        packet.write_string(time)
+
+        return packet.get_packet()
+    
+    def unregist_patrol(time):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.PATROL_UNREGIST.value)
+        packet.write_string(time)
 
         return packet.get_packet()
