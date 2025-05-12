@@ -56,7 +56,7 @@ class MainServerNode(Node):
             self.get_logger().info(f"[TCP] 서버 시작: {host}:{port}")
             while True:
                 conn, addr = server.accept()
-                handler = SocketHandler(conn, addr, self)
+                handler = SocketHandler(conn, addr, self, self.robot_handler)
                 handler.start()
 
 
