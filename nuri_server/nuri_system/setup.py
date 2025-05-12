@@ -25,7 +25,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'main_server = nuri_system.main_server_node:main'
+            'main_server = nuri_system.main_server_node:main',
         ],
     },
 )
