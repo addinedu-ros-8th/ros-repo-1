@@ -3,7 +3,7 @@ from network.packet import Packet
 from modules import UIFunctions
 
 from PySide6.QtWidgets import QTableWidgetItem, QMessageBox, QFrame
-from PySide6.QtCore import QDate
+from PySide6.QtCore import QDate, Qt
 from PySide6.QtNetwork import QNetworkInterface, QAbstractSocket
 
 class PacketHandler():
@@ -106,14 +106,42 @@ class PacketHandler():
                     parent.ui.comboBox_2.addItem(packet.read_string())
             else:
                 QMessageBox.warning(None, "에러", "알 수 없는 에러가 발생했습니다. 다시 시도해주세요.")
+        elif opcode == Opcode.LOG_SEARCH.value:
+            status = packet.read_byte()
+
+            if status == 0x00:
+                parent.ui.tableWidget.clearContents()
+                parent.ui.tableWidget.setRowCount(0)
+                count = packet.read_short()
+                if count == 0:
+                    QMessageBox.warning(None, "에러", "조회된 로그가 없습니다.")
+                    return
+                
+                for idx in range(count):
+                    parent.ui.tableWidget.insertRow(idx)
+                    type = packet.read_string()
+                    robot_id = packet.read_byte()
+                    comment = packet.read_string()
+                    date = packet.read_string()
+
+                    parent.ui.tableWidget.setItem(idx, 0, QTableWidgetItem(str(idx)))
+                    parent.ui.tableWidget.setItem(idx, 1, QTableWidgetItem(type))
+                    parent.ui.tableWidget.setItem(idx, 2, QTableWidgetItem(parent.ui.comboBox_2.itemText(robot_id)))
+                    parent.ui.tableWidget.setItem(idx, 3, QTableWidgetItem(comment))
+                    parent.ui.tableWidget.setItem(idx, 4, QTableWidgetItem(date))
+            else:
+                QMessageBox.warning(None, "에러", "알 수 없는 에러가 발생했습니다. 다시 시도해주세요.")
         elif opcode == Opcode.DETECTION.value:
+            if parent.is_emergency:
+                return
+            
             robot_id = packet.read_byte()
             type = packet.read_string()
-            addr = packet.read_string()
 
-            retval = QMessageBox.critical(None, "경고", str(robot_id) + "번 로봇이 '" + type + "'를 감지했습니다.", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+            retval = QMessageBox.critical(None, "경고", str(robot_id) + "번 로봇이 '" + type + "' 감지!!\n카메라를 연결하시겠습니까?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
             if retval == QMessageBox.Yes:
-                print(addr)
+                parent.socket.sendData(Packet.request_video(parent.addr, robot_id))
+                parent.is_emergency = True
 
         elif opcode == Opcode.ROBOT_LIST.value:
             size = packet.read_byte()
@@ -128,3 +156,43 @@ class PacketHandler():
                 robots.append({'index' : index, 'name' : f"Robot {id}", 'status' : status, 'battery' : f"{battery}%", 'online' : online})
 
             UIFunctions.build_robot_list(parent, robots)
+        elif opcode == Opcode.ROBOT_LOCATION.value:
+            size = packet.read_short()
+
+            if parent.ui.stackedWidget.currentWidget().objectName() in ["home", "page"]:
+                parent.ui.map.clear_markers()
+                for idx in range(size):
+                    x = packet.read_short()
+                    y = packet.read_short()
+
+                    parent.ui.map.draw_marker(x, y, f"누리{idx}호")
+        elif opcode == Opcode.PATROL_LIST.value:
+            size = packet.read_byte()
+
+            parent.ui.patrol_table.clearContents()
+            parent.ui.patrol_table.setRowCount(0)
+            for idx in range(size):
+                parent.ui.patrol_table.insertRow(idx)
+
+                time = packet.read_string()
+
+                item = QTableWidgetItem(time)
+                item.setTextAlignment(Qt.AlignCenter)
+                parent.ui.patrol_table.setItem(idx, 0, item)
+        elif opcode == Opcode.PATROL_REGIST.value:
+            status = packet.read_byte()
+
+            if status == 0x00:
+                QMessageBox.information(None, "성공", "순찰 스케쥴이 등록되었습니다.")
+                parent.socket.sendData(Packet.request_patrol_schedule())
+            else:
+                QMessageBox.warning(None, "에러", "알 수 없는 에러가 발생했습니다. 다시 시도해주세요.")
+        elif opcode == Opcode.PATROL_UNREGIST.value:
+            status = packet.read_byte()
+
+            if status == 0x00:
+                QMessageBox.information(None, "성공", "해당 시간의 순찰이 취소되었습니다.")
+
+                parent.socket.sendData(Packet.request_patrol_schedule())
+            else:
+                QMessageBox.warning(None, "에러", "알 수 없는 에러가 발생했습니다. 다시 시도해주세요.")
