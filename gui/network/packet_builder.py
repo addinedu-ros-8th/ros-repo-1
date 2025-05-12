@@ -10,6 +10,9 @@ class PacketBuilder:
     def write_opcode(self, command: int):
         self.buf.write(struct.pack('>B', command))
 
+    def write_byte(self, value: int):
+        self.buf.write(struct.pack('>B', value))
+
     def write_short(self, value: int):
         self.buf.write(struct.pack('>H', value))
 
