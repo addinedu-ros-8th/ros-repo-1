@@ -8,12 +8,13 @@ from nuri_system.handler.client_handler import ClientHandler
 class SocketHandler(threading.Thread):
     client_manager = ClientManager()
 
-    def __init__(self, conn, addr, ros_node=None):
+    def __init__(self, conn, addr, ros_node=None, robot_handler=None):
         super().__init__()
         self.conn = conn
         # self.conn.settimeout(1.0)
         self.addr = addr
         self.ros_node = ros_node
+        self.robot_handler = robot_handler
 
     def run(self):
         try:
