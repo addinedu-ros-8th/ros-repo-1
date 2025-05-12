@@ -18,7 +18,8 @@
 # ///////////////////////////////////////////////////////////////
 from modules import *
 from widgets import *
-from network import packet
+from network.packet import Packet
+from PySide6.QtTest import QTest
 
 # GLOBALS
 # ///////////////////////////////////////////////////////////////
@@ -323,7 +324,7 @@ class UIFunctions():
             else 102 if parent.ui.combo_room.currentIndex() == 1 else 103
         bed_number = int(parent.ui.bed_number.text())
         
-        parent.socket.sendData(packet.Packet.send_resident_info(
+        parent.socket.sendData(Packet.send_resident_info(
             name, birthday, sex, room_number, bed_number, face
         ))
 
@@ -337,7 +338,7 @@ class UIFunctions():
         name = parent.ui.tbResidentList.item(row, 0).text()
         birth = parent.ui.tbResidentList.item(row, 2).text()
 
-        parent.socket.sendData(packet.Packet.request_resident_info(name, birth))
+        parent.socket.sendData(Packet.request_resident_info(name, birth))
 
     def click_discharge(parent):
         name = parent.ui.lineEdit_4.text()
@@ -346,20 +347,20 @@ class UIFunctions():
         if retval == QMessageBox.Yes:
             birthday = parent.ui.date_birth_2.text()
             
-            parent.socket.sendData(packet.Packet.request_discharge(name, birthday))
+            parent.socket.sendData(Packet.request_discharge(name, birthday))
 
     def click_search(parent):
         name = parent.ui.lineEdit.text()
         check = parent.ui.check_discharge.isChecked()
 
-        parent.socket.sendData(packet.Packet.request_resident_list(name, check))
+        parent.socket.sendData(Packet.request_resident_list(name, check))
     
     def click_modify(parent):
         name = parent.ui.lineEdit_4.text()
         sex = 'M' if parent.ui.combo_sex_2.currentText() == "남성" else 'F'
         birthday = parent.ui.date_birth_2.text()
 
-        parent.socket.sendData(packet.Packet.update_resident_info(
+        parent.socket.sendData(Packet.update_resident_info(
             name, birthday, sex, 0, 0
         ))
 
@@ -367,7 +368,7 @@ class UIFunctions():
         name = parent.ui.lineEdit_4.text()
         birthday = parent.ui.date_birth_2.text()
 
-        parent.socket.sendData(packet.Packet.delete_resident_info(name, birthday))
+        parent.socket.sendData(Packet.delete_resident_info(name, birthday))
 
     def build_robot_list(parent, robots: list[dict]):
         layout = parent.ui.robotListLayout
@@ -397,7 +398,105 @@ class UIFunctions():
         parent.ui.info.setEnabled(False)
 
     def click_refresh(parent):
-        parent.socket.sendData(packet.Packet.request_robot_list())
+        parent.socket.sendData(Packet.request_robot_list())
+
+    def click_log_search(parent):
+        start = parent.ui.dateEdit.text()
+        end = parent.ui.dateEdit_2.text()
+        event_type = parent.ui.comboBox.currentText()
+        robot = parent.ui.comboBox_2.currentIndex()
+        keyword = parent.ui.line_log.text()
+
+        parent.socket.sendData(Packet.request_log_list(start, end, event_type, robot, keyword))
 
     def handle_robot_click(parent, index):
-        pass
+        # parent.socket.sendData(Packet.request_video('done', 1))
+        if parent.is_emergency:
+            retval = QMessageBox.information(None, "경고", "비상상황을 종료하시겠습니까?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+
+            if retval == QMessageBox.Yes:
+                parent.socket.sendData(Packet.request_video('done', index+1))
+                parent.is_emergency = False
+                QTest.qWait(100)
+                parent.ui.map.set_map()
+        elif not parent.is_emergency and parent.ui.robotListLayout.itemAt(index).widget().status_label.text() == "비상상황":
+            retval = QMessageBox.information(None, "경고", "카메라를 연결하시겠습니까?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+            if retval == QMessageBox.Yes:
+                parent.socket.sendData(Packet.request_video(parent.addr, index+1))
+            else:
+                parent.socket.sendData(Packet.request_video('done', index+1))
+                parent.is_emergency = False
+                QTest.qWait(100)
+                parent.ui.map.set_map()
+
+        # print(parent.ui.robotListLayout.itemAt(index).widget().status_label.text())
+
+    def click_map(parent, x, y):
+        label = parent.ui.label_display
+        pixmap = label.pixmap()
+        w = label.width()
+        h = label.height()
+
+        map_width, map_height = 440, 288
+
+        x_real = int(x * (map_width / w))
+        y_real = int(y * (map_height / h))
+
+        image = pixmap.toImage()
+        color = image.pixelColor(x_real, y_real)
+
+        if color.name() == "#000000":
+            QMessageBox.warning(parent, "경고", "로봇이 이동할 수 없는 위치입니다.")
+
+        print(f"실제 좌표: ({x_real}, {y_real})")
+
+    def click_patrol_register(parent):
+        time = parent.ui.patrol_time_edit.time().toString("H:mm")
+
+        for row in range(parent.ui.patrol_table.rowCount()):
+            item = parent.ui.patrol_table.item(row, 0).text()
+            if time == item[:-3]:
+                QMessageBox.warning(None, "에러", "이미 등록된 순찰시간입니다.")
+                return
+
+        parent.socket.sendData(Packet.regist_partrol(time))
+
+    def click_patrol_cancel(parent):
+        item = parent.ui.patrol_table.selectedItems()
+
+        if len(item) == 0:
+            QMessageBox.warning(None, "에러", "취소할 시간을 선택해주세요.")
+        else:
+            time = item[0].text()
+            print(time)
+            parent.socket.sendData(Packet.unregist_patrol(time))
+        
+
+class MapDisplay:
+    def __init__(self, label: QLabel, map_path: str):
+        self.label = label
+        self.original_map = QPixmap(map_path)  # 원본 맵 유지
+        self.marker_path = u":/icons/images/icons/robot.png"
+        self.marker_widgets = []  # QLabel 마커들 저장
+        self.set_map()
+
+    def set_map(self):
+        """원본 맵만 표시"""
+        self.label.setPixmap(self.original_map)
+        self.clear_markers()
+
+    def draw_marker(self, x: int, y: int, name: str = ""):
+        # 마커 QLabel 생성
+        marker = QLabel(self.label)
+        marker.setPixmap(QPixmap(self.marker_path))
+        marker.setToolTip(name)
+        marker.setFixedSize(24, 24)
+        marker.move(x, y)
+        marker.show()
+
+        self.marker_widgets.append(marker)
+
+    def clear_markers(self):
+        for marker in self.marker_widgets:
+            marker.deleteLater()
+        self.marker_widgets.clear()
