@@ -36,7 +36,7 @@ class PacketReader:
     def read_image(self) -> QPixmap:
         data = self.read_bytes()  # 이미지 크기 읽고, 데이터 읽기
         pixmap = QPixmap()
-        if not pixmap.loadFromData(data, "PNG"):
+        if not pixmap.loadFromData(data):
             raise ValueError("Failed to load image from data.")
         
         image = pixmap.toImage().convertToFormat(QImage.Format.Format_RGB32)
