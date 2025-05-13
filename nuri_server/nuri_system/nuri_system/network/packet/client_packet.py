@@ -166,6 +166,14 @@ class ClientPacket:
 
         return packet.get_packet()
     
+    def patrol_mode():
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.PATROL_MODE.value)
+        packet.write_byte(0x01)
+
+        return packet.get_packet()
+    
     def test2(status):
         packet = PacketBuilder()
 

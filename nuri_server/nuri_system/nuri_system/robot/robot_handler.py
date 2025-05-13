@@ -111,6 +111,8 @@ class RobotHandler(Node):
                 msg.data = True
                 pub.publish(msg)
                 self.last_time = datetime.now()
+                client_manager = SocketHandler.client_manager
+                client_manager.broadcast(ClientPacket.patrol_mode(), 'device')
                 break
 
         if self.last_time is not None:
