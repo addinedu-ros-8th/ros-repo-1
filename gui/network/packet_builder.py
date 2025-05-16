@@ -10,6 +10,9 @@ class PacketBuilder:
     def write_opcode(self, command: int):
         self.buf.write(struct.pack('>B', command))
 
+    def write_byte(self, value: int):
+        self.buf.write(struct.pack('>B', value))
+
     def write_short(self, value: int):
         self.buf.write(struct.pack('>H', value))
 
@@ -18,6 +21,9 @@ class PacketBuilder:
 
     def write_bool(self, value: bool):
         self.buf.write(b'\x01' if value else b'\x00')
+
+    def write_float(self, value: float):
+        self.buf.write(struct.pack('>f', value))
 
     def write_char(self, value: str):
         self.buf.write(struct.pack('>c', value.encode('ascii')))

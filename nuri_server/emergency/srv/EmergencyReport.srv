@@ -1,5 +1,0 @@
-int64 rebot_id
-string emergency_type 
----
-bool success 
-string message 

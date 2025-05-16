@@ -21,7 +21,6 @@ import os
 # ///////////////////////////////////////////////////////////////
 from modules import *
 from widgets import *
-from PySide6.QtNetwork import QNetworkInterface, QAbstractSocket
 os.environ["QT_FONT_DPI"] = "96" # FIX Problem for High DPI and Scale above 100%
 
 # SET AS GLOBAL WIDGETS
@@ -29,8 +28,10 @@ os.environ["QT_FONT_DPI"] = "96" # FIX Problem for High DPI and Scale above 100%
 widgets = None
 
 from network.tcp_socket import TCPSocket
+from network.udp_socket import UDPSocket
 from network.packet import Packet
 from handler.packet_handler import PacketHandler
+from handler.emergency_handler import EmergencyHandler
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -51,6 +52,11 @@ class MainWindow(QMainWindow):
         else:
             self.socket.sendData(Packet.client_hello())
 
+        self.udp_socket = UDPSocket()
+        self.udp_socket.receive_image.connect(lambda reader: EmergencyHandler.handle_packet(self, reader))
+        self.is_emergency = False
+        self.emergency = False
+        # self.addr = None
         # USE CUSTOM TITLE BAR | USE AS "False" FOR MAC OR LINUX
         # ///////////////////////////////////////////////////////////////
         Settings.ENABLE_CUSTOM_TITLE_BAR = True
@@ -110,6 +116,9 @@ class MainWindow(QMainWindow):
     def checkPassword(self):
         password = widgets.lineEdit_2.text()
         if password == "1234":
+            if len(self.ui.map.map_info) == 0:
+                QMessageBox.warning(self, "에러", "아직 로봇의 준비가 완료되지 않았습니다.\n잠시후 다시 시도해주세요.")
+                return
             UIFunctions.setComponentEnabled(self, True)
             widgets.lineEdit_2.setText("")
             # widgets.stackedWidget.setCurrentWidget(widgets.home)
@@ -158,6 +167,10 @@ class MainWindow(QMainWindow):
             UIFunctions.resetStyle(self, btnName) # RESET ANOTHERS BUTTONS SELECTED
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet())) # SELECT MENU
 
+            self.socket.sendData(Packet.request_patrol_schedule())
+            self.socket.sendData(Packet.request_walk_schedule())
+            self.socket.sendData(Packet.request_resident_name_list())
+
 
     # RESIZE EVENTS
     # ///////////////////////////////////////////////////////////////
@@ -172,7 +185,11 @@ class MainWindow(QMainWindow):
         self.dragPos = event.globalPosition().toPoint()
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    # app.setWindowIcon(QIcon("icon.ico"))
-    window = MainWindow()
-    sys.exit(app.exec())
+    try:
+        app = QApplication(sys.argv)
+        # app.setWindowIcon(QIcon("icon.ico"))
+        window = MainWindow()
+    except:
+        QMessageBox.critical(None, "에러", "에러가 발생했습니다. 관리자에게 문의 바랍니다.")
+    finally:
+        sys.exit(app.exec())

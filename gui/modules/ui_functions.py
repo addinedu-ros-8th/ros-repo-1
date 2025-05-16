@@ -13,12 +13,14 @@
 # https://doc.qt.io/qtforpython/licenses.html
 #
 # ///////////////////////////////////////////////////////////////
+import math
 
 # MAIN FILE
 # ///////////////////////////////////////////////////////////////
 from modules import *
 from widgets import *
-from network import packet
+from network.packet import Packet
+from PySide6.QtTest import QTest
 
 # GLOBALS
 # ///////////////////////////////////////////////////////////////
@@ -283,8 +285,6 @@ class UIFunctions():
         UIFunctions.resetStyle(parent, "btn_home")
         parent.ui.btn_home.setStyleSheet(UIFunctions.selectMenu(parent.ui.btn_home.styleSheet()))
 
-        # parent.socket.sendData(Packet.robot_list())
-
     def click_info(parent):
         if parent.ui.btn_info.text() == "신규등록":
             parent.ui.btn_info.setText("이전화면")
@@ -325,7 +325,7 @@ class UIFunctions():
             else 102 if parent.ui.combo_room.currentIndex() == 1 else 103
         bed_number = int(parent.ui.bed_number.text())
         
-        parent.socket.sendData(packet.Packet.send_resident_info(
+        parent.socket.sendData(Packet.send_resident_info(
             name, birthday, sex, room_number, bed_number, face
         ))
 
@@ -339,7 +339,7 @@ class UIFunctions():
         name = parent.ui.tbResidentList.item(row, 0).text()
         birth = parent.ui.tbResidentList.item(row, 2).text()
 
-        parent.socket.sendData(packet.Packet.request_resident_info(name, birth))
+        parent.socket.sendData(Packet.request_resident_info(name, birth))
 
     def click_discharge(parent):
         name = parent.ui.lineEdit_4.text()
@@ -348,20 +348,20 @@ class UIFunctions():
         if retval == QMessageBox.Yes:
             birthday = parent.ui.date_birth_2.text()
             
-            parent.socket.sendData(packet.Packet.request_discharge(name, birthday))
+            parent.socket.sendData(Packet.request_discharge(name, birthday))
 
     def click_search(parent):
         name = parent.ui.lineEdit.text()
         check = parent.ui.check_discharge.isChecked()
 
-        parent.socket.sendData(packet.Packet.request_resident_list(name, check))
+        parent.socket.sendData(Packet.request_resident_list(name, check))
     
     def click_modify(parent):
         name = parent.ui.lineEdit_4.text()
         sex = 'M' if parent.ui.combo_sex_2.currentText() == "남성" else 'F'
         birthday = parent.ui.date_birth_2.text()
 
-        parent.socket.sendData(packet.Packet.update_resident_info(
+        parent.socket.sendData(Packet.update_resident_info(
             name, birthday, sex, 0, 0
         ))
 
@@ -369,7 +369,7 @@ class UIFunctions():
         name = parent.ui.lineEdit_4.text()
         birthday = parent.ui.date_birth_2.text()
 
-        parent.socket.sendData(packet.Packet.delete_resident_info(name, birthday))
+        parent.socket.sendData(Packet.delete_resident_info(name, birthday))
 
     def build_robot_list(parent, robots: list[dict]):
         layout = parent.ui.robotListLayout
@@ -398,6 +398,206 @@ class UIFunctions():
         parent.ui.label_8.setFrameShape(QFrame.Shape.Box)
         parent.ui.info.setEnabled(False)
 
+    def click_refresh(parent):
+        parent.socket.sendData(Packet.request_robot_list())
+
+    def click_log_search(parent):
+        start = parent.ui.dateEdit.text()
+        end = parent.ui.dateEdit_2.text()
+        event_type = parent.ui.comboBox.currentText()
+        robot = parent.ui.comboBox_2.currentIndex()
+        keyword = parent.ui.line_log.text()
+
+        parent.socket.sendData(Packet.request_log_list(start, end, event_type, robot, keyword))
 
     def handle_robot_click(parent, index):
-        parent.socket.sendData(packet.Packet.test(index))
+        # parent.socket.sendData(Packet.request_video('done', 1))
+        if parent.is_emergency:
+            retval = QMessageBox.information(None, "경고", "비상상황을 종료하시겠습니까?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+
+            if retval == QMessageBox.Yes:
+                parent.socket.sendData(Packet.request_video('done', index+1))
+                parent.is_emergency = False
+                QTest.qWait(100)
+                parent.ui.map.set_map()
+        elif not parent.is_emergency and parent.ui.robotListLayout.itemAt(index).widget().status_label.text() == "비상상황":
+            retval = QMessageBox.information(None, "경고", "카메라를 연결하시겠습니까?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+            if retval == QMessageBox.Yes:
+                parent.socket.sendData(Packet.request_video(parent.addr, index+1))
+            else:
+                parent.socket.sendData(Packet.request_video('done', index+1))
+                parent.is_emergency = False
+                QTest.qWait(100)
+                parent.ui.map.set_map()
+
+        # print(parent.ui.robotListLayout.itemAt(index).widget().status_label.text())
+
+    def click_map(parent, x, y):
+        label = parent.ui.label_display
+        pixmap = label.pixmap()
+
+        x_real, y_real = UIFunctions.label_px_to_world(x, y, parent.ui.map.map_info)
+
+        image = pixmap.toImage()
+        color = image.pixelColor(x_real, y_real)
+
+        print(color.name())
+
+        if color.name() == "#000000":
+            QMessageBox.warning(parent, "경고", "로봇이 이동할 수 없는 위치입니다.")
+
+        parent.socket.sendData(Packet.send_goal_pose(x_real, y_real))
+
+        print(f"실제 좌표: ({x_real}, {y_real})")
+
+    def label_px_to_world(px, py, map_info, label_width=640, label_height=480):
+        resolution = map_info['resolution']
+        origin_x = map_info['origin_x']
+        origin_y = map_info['origin_y']
+        map_w = map_info['width']
+        map_h = map_info['height']
+
+        # 비율계산
+        scale_x = map_w / label_width
+        scale_y = map_h / label_height
+
+        # 픽셀 -> 그리드 셀 좌표 (정수 셀 위치)
+        gx = (map_w - (px * scale_x))
+        gy = (py * scale_y)  # Y축 반전
+
+        # 셀 좌표 -> 실제 월드 좌표
+        wx = gx * resolution + origin_x
+        wy = gy * resolution + origin_y
+
+        return wx, wy
+
+    def click_patrol_register(parent):
+        time = parent.ui.patrol_time_edit.time().toString("H:mm")
+
+        for row in range(parent.ui.patrol_table.rowCount()):
+            item = parent.ui.patrol_table.item(row, 0).text()
+            if time == item[:-3]:
+                QMessageBox.warning(None, "에러", "이미 등록된 순찰시간입니다.")
+                return
+
+        parent.socket.sendData(Packet.regist_partrol(time))
+
+    def click_patrol_cancel(parent):
+        item = parent.ui.patrol_table.selectedItems()
+
+        if len(item) == 0:
+            QMessageBox.warning(None, "에러", "취소할 시간을 선택해주세요.")
+        else:
+            time = item[0].text()
+            parent.socket.sendData(Packet.unregist_patrol(time))
+
+    def click_walk_register(parent):
+        time = parent.ui.walk_time_edit.time().toString("HH:mm")
+        name = parent.ui.walk_name_combo.currentText()
+
+        for row in range(parent.ui.walk_table.rowCount()):
+            sel_name = parent.ui.walk_table.item(row, 0).text()
+            sel_time = parent.ui.walk_table.item(row, 1).text()
+            print(sel_time, sel_name, time, name)
+            if time == sel_time and name == sel_name:
+                QMessageBox.warning(None, "에러", f"{name}님은 산책은 '{time}'에 등록되어 있습니다.")
+                return
+
+        parent.socket.sendData(Packet.regist_walk(name, time))
+
+    def click_walk_cancel(parent):
+        item = parent.ui.walk_table.selectedItems()
+
+        if len(item) == 0:
+            QMessageBox.warning(None, "에러", "취소할 시간을 선택해주세요.")
+        else:
+            name = item[0].text()
+            time = item[1].text()
+            parent.socket.sendData(Packet.unregist_walk(name, time))
+        
+
+class MapDisplay:
+    def __init__(self, label: QLabel, map_path: str):
+        self.label = label
+        self.original_map = QPixmap(map_path)  # 원본 맵 유지
+        self.marker_path = u":/icons/images/icons/robot.png"
+        self.marker_widgets = []  # QLabel 마커들 저장
+        self.set_map()
+        self.map_info = {}
+
+    def update_map_info(self, resolution, origin_x, origin_y, width, height):
+        new_info = {
+            'resolution': resolution,
+            'origin_x': origin_x,
+            'origin_y': origin_y,
+            'width': width,
+            'height': height
+        }
+
+        if self.map_info != new_info:
+            self.map_info = new_info
+
+    def set_map(self):
+        """원본 맵만 표시"""
+        self.label.setPixmap(self.original_map)
+        self.clear_markers()
+
+    def draw_marker(self, x, y, q_x, q_y, q_z, q_w, name: str = ""):
+        # 마커 QLabel 생성
+        if len(self.map_info) == 0:
+            return
+        
+        pixmap = QPixmap(self.marker_path)
+        
+        px, py = self.world_to_pixel(x, y, self.map_info)
+        yaw = self.quaternion_to_yaw(q_x, q_y, q_z, q_w)
+        angle_deg = math.degrees(yaw)
+        rotated = self.rotate_pixmap(pixmap, angle_deg)
+
+        marker = QLabel(self.label)
+        marker.setPixmap(rotated)
+        marker.setToolTip(name)
+        marker.setFixedSize(24, 24)
+        marker.move(px - 24 - rotated.width() // 2, py -24 - rotated.height() // 2)
+        marker.setAttribute(Qt.WA_TranslucentBackground)
+        marker.show()
+
+        self.marker_widgets.append(marker)
+
+    def clear_markers(self):
+        for marker in self.marker_widgets:
+            marker.deleteLater()
+        self.marker_widgets.clear()
+
+    def world_to_pixel(self, wx, wy, map_info, label_width=640, label_height=480):
+        resolution = map_info['resolution']
+        origin_x = map_info['origin_x']
+        origin_y = map_info['origin_y']
+        map_w = map_info['width']
+        map_h = map_info['height']
+
+        # 월드 좌표 → 그리드 인덱스
+        gx = (wx - origin_x) / resolution
+        gy = (wy - origin_y) / resolution
+
+        # 그리드 인덱스 → 픽셀 좌표 (Y축 반전)
+        scale_x = label_width / map_w
+        scale_y = label_height / map_h
+
+        px = int((map_w - gx) * scale_x) # X축 반전
+        py = int((gy) * scale_y)
+
+        return px, py
+    
+    def rotate_pixmap(self, pixmap: QPixmap, angle_degrees: float) -> QPixmap:
+        transform = QTransform().rotate(angle_degrees)
+        return pixmap.transformed(transform, mode=Qt.SmoothTransformation)
+
+    
+    def quaternion_to_yaw(self, q_x, q_y, q_z, q_w):
+        siny_cosp = 2.0 * (q_w * q_z + q_x * q_y)
+        cosy_cosp = 1.0 - 2.0 * (q_y * q_y + q_z * q_z)
+        return math.atan2(siny_cosp, cosy_cosp)  # 라디안
+
+    def send_destination(self, robot_id, x, y):
+        pub = self.create_publiser

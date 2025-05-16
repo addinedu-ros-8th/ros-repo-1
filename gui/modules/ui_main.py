@@ -11,6 +11,7 @@
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtWidgets import *
+from PySide6.QtNetwork import QNetworkInterface, QAbstractSocket
 
 from . resources_rc import *
 
@@ -23,6 +24,7 @@ class Ui_MainWindow(object):
         MainWindow.resize(940, 560)
         MainWindow.setMinimumSize(QSize(940, 560))
         MainWindow.setMaximumSize(QSize(940, 560))
+        MainWindow.addr = self.get_local_ip()
         self.styleSheet = QWidget(MainWindow)
         self.styleSheet.setObjectName(u"styleSheet")
         font = QFont()
@@ -423,12 +425,15 @@ class Ui_MainWindow(object):
         self.homeLayout.setSpacing(10)
 
         # 왼쪽 맵/영상 QLabel
-        self.label_display = QLabel()
+        self.label_display = ClickableImageLabel()
         self.label_display.setObjectName("label_display")
-        self.label_display.setStyleSheet("background-color: #222; border: 1px solid #444;")
+        # self.label_display.setStyleSheet("background-color: #222; border: 1px solid #444;")
         self.label_display.setAlignment(Qt.AlignCenter)
-        self.label_display.setText("로봇 맵/카메라 영역")
-        self.label_display.setMinimumSize(600, 400)
+        # self.label_display.setText("로봇 맵/카메라 영역")
+        # self.label_display.setMinimumSize(600, 400)
+        self.label_display.setScaledContents(True)
+        # self.label_display.setPixmap(QPixmap())
+        
         self.homeLayout.addWidget(self.label_display, 3)  # 왼쪽 영역 (넓게)
 
         # 오른쪽 전체 컨테이너
@@ -454,8 +459,6 @@ class Ui_MainWindow(object):
         self.robotListLayout = QVBoxLayout(self.robotListContainer)
 
         robots = [
-        {"index": 0, "name": "Robot 1", "status": "online", "battery": "75%"},
-        {"index": 1, "name": "Robot 2", "status": "offline", "battery": "38%"},
         ]
 
         for robot in robots:
@@ -680,7 +683,7 @@ class Ui_MainWindow(object):
         # 상단 필터 바 생성
         filter_layout = QHBoxLayout()
         self.dateEdit = QDateEdit(calendarPopup=True)
-        self.dateEdit.setDate(QDate.currentDate())
+        self.dateEdit.setDate(QDate.currentDate().addDays(-14))
         self.dateEdit_2 = QDateEdit(calendarPopup=True)
         self.dateEdit_2.setDate(QDate.currentDate())
 
@@ -708,6 +711,7 @@ class Ui_MainWindow(object):
         self.tableWidget.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tableWidget.setSelectionMode(QAbstractItemView.SingleSelection)
         self.tableWidget.horizontalHeader().setStretchLastSection(True)
+        self.tableWidget.verticalHeader().setVisible(False)
 
         # 최종 레이아웃 조립
         logs_layout.addLayout(filter_layout)
@@ -740,12 +744,13 @@ class Ui_MainWindow(object):
         # === 순찰 스케줄 영역 ===
         self.group_patrol = QGroupBox("순찰 스케줄")
         self.group_patrol_layout = QVBoxLayout(self.group_patrol)
+        self.group_patrol.setMinimumHeight(300)
 
         # 순찰 등록 부분
         self.patrol_form_layout = QHBoxLayout()
         self.patrol_time_label = QLabel("순찰 시간")
         self.patrol_time_edit = QTimeEdit()
-        self.patrol_time_edit.setDisplayFormat("hh:mm AP")
+        self.patrol_time_edit.setDisplayFormat("hh:mm")
         self.patrol_register_button = QPushButton("등록")
         self.patrol_cancel_button = QPushButton("취소")
         self.patrol_form_layout.addWidget(self.patrol_time_label)
@@ -758,35 +763,44 @@ class Ui_MainWindow(object):
         self.patrol_table = QTableWidget(0, 1)
         self.patrol_table.setHorizontalHeaderLabels(["순찰 스케줄"])
         self.patrol_table.horizontalHeader().setStretchLastSection(True)
+        self.patrol_table.verticalHeader().setVisible(False)
+        self.patrol_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.patrol_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.patrol_table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.group_patrol_layout.addWidget(self.patrol_table)
 
         # === 산책 스케줄 영역 ===
         self.group_walk = QGroupBox("산책 스케줄", self.settings)
         self.group_walk_layout = QVBoxLayout(self.group_walk)
+        self.group_walk.setMinimumHeight(300)
 
         # 산책 등록 부분
         self.walk_form_layout = QGridLayout()
         self.walk_time_label = QLabel("산책 시간")
         self.walk_time_edit = QTimeEdit()
-        self.walk_time_edit.setDisplayFormat("hh:mm AP")
+        self.walk_time_edit.setDisplayFormat("hh:mm")
         self.walk_name_label = QLabel("대상자명")
-        self.walk_name_edit = QLineEdit()
-        self.walk_name_edit.setFixedWidth(350)
+        self.walk_name_combo = QComboBox()
+        self.walk_name_combo.setFixedWidth(350)
         self.walk_register_button = QPushButton("등록")
         self.walk_cancel_button = QPushButton("취소")
 
         self.walk_form_layout.addWidget(self.walk_time_label, 0, 0)
         self.walk_form_layout.addWidget(self.walk_time_edit, 0, 1)
         self.walk_form_layout.addWidget(self.walk_name_label, 1, 0)
-        self.walk_form_layout.addWidget(self.walk_name_edit, 1, 1)
+        self.walk_form_layout.addWidget(self.walk_name_combo, 1, 1)
         self.walk_form_layout.addWidget(self.walk_register_button, 1, 2)
         self.walk_form_layout.addWidget(self.walk_cancel_button, 1, 3)
         self.group_walk_layout.addLayout(self.walk_form_layout)
 
         # 산책 스케줄 테이블
-        self.walk_table = QTableWidget(0, 3)
-        self.walk_table.setHorizontalHeaderLabels(["이름", "산책시간", "코스"])
+        self.walk_table = QTableWidget(0, 2)
+        self.walk_table.setHorizontalHeaderLabels(["이름", "산책시간"])
         self.walk_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.walk_table.verticalHeader().setVisible(False)
+        self.walk_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.walk_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.walk_table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.group_walk_layout.addWidget(self.walk_table)
 
         # GroupBox들을 Scroll 내부에 추가
@@ -912,8 +926,8 @@ class Ui_MainWindow(object):
         self.stackedWidget_2.setCurrentIndex(0)
 
         QMetaObject.connectSlotsByName(MainWindow)
-    # setupUi
 
+    # setupUi
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.titleLeftApp.setText(QCoreApplication.translate("MainWindow", u"누리 에이전트", None))
@@ -972,24 +986,26 @@ class Ui_MainWindow(object):
         item = self.tableWidget.horizontalHeaderItem(4)
         item.setText(QCoreApplication.translate("MainWindow", "로그 시간"))
         self.tableWidget.setColumnWidth(0, 51)
-        self.tableWidget.setColumnWidth(1, 150)
+        self.tableWidget.setColumnWidth(1, 80)
         self.tableWidget.setColumnWidth(2, 100)
-        self.tableWidget.setColumnWidth(3, 330)
+        self.tableWidget.setColumnWidth(3, 400)
         self.tableWidget.setColumnWidth(4, 160)
         self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Fixed)
         self.btn_log_search.setText(QCoreApplication.translate("MainWindow", "검색"))
         self.dateEdit.setDisplayFormat(QCoreApplication.translate("MainWindow", "yyyy-MM-dd"))
         self.dateEdit_2.setDisplayFormat(QCoreApplication.translate("MainWindow", "yyyy-MM-dd"))
-        # self.label_14.setText(QCoreApplication.translate("MainWindow", "~"))
-        # self.label_15.setText(QCoreApplication.translate("MainWindow", "검색 기간 설정"))
-        # self.label_16.setText(QCoreApplication.translate("MainWindow", "이벤트 타입"))
-        # self.label_17.setText(QCoreApplication.translate("MainWindow", "로봇"))
-        # self.label_18.setText(QCoreApplication.translate("MainWindow", "검색어"))
-
-        # self.movie_label.setText(QCoreApplication.translate("MainWindow", u"Test", None))
 
         self.creditsLabel.setText(QCoreApplication.translate("MainWindow", u"By: Wanderson M. Pimenta", None))
         self.version.setText(QCoreApplication.translate("MainWindow", u"v1.0.3", None))
+    
+    def get_local_ip(self):
+        for interface in QNetworkInterface.allInterfaces():
+            if interface.flags() & QNetworkInterface.IsUp and interface.flags() & QNetworkInterface.IsRunning:
+                for entry in interface.addressEntries():
+                    ip = entry.ip()
+                    if ip.protocol() == QAbstractSocket.IPv4Protocol and not ip.isLoopback():
+                        return ip.toString()
+        return "127.0.0.1"
 
 class RobotEntry(QWidget):
     clicked = Signal(int)  # 로봇 이름 시그널
@@ -1002,26 +1018,56 @@ class RobotEntry(QWidget):
         self.robot_layout = QVBoxLayout(self)
         self.robot_layout.setContentsMargins(5, 5, 5, 5)
 
-        # 첫 줄: 이름만
+        # 첫 줄: 이름 + 상태
         top_row = QHBoxLayout()
         name_label = QLabel(f"🤖 {robot['name']}")
-        name_label.setStyleSheet("padding: 2px;")
+        name_label.setStyleSheet("padding: 2px; font-size: 18px")
         name_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
+        self.status_label = QLabel(f"{robot['status']}")  # 예: 대기 중 / 순찰 중 등
+        style = "padding: 2px; color: #aaa;"
+        if self.status_label.text() == "비상상황":
+             style += " color: red;"
+        self.status_label.setStyleSheet(style)
+        self.status_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
         top_row.addWidget(name_label)
+        top_row.addWidget(self.status_label)
         self.robot_layout.addLayout(top_row)
 
-        # 둘째 줄: 연결상태 + 배터리 + IP
+        # 둘째 줄: 연결 상태 + 배터리
         bottom_row = QHBoxLayout()
-        status_label = QLabel("🟢 연결됨" if robot["status"] == "online" else "🔴 끊김")
-        battery_label = QLabel(f"🔋 {robot['battery']}")
 
-        for lbl in (status_label, battery_label):
-            lbl.setStyleSheet("padding: 2px; margin-left: 5px; color: gray;")
-            lbl.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-            bottom_row.addWidget(lbl)
+        self.online_label = QLabel("🟢 연결됨" if robot["online"] == "online" else "🔴 끊김")
+        self.online_label.setObjectName("online_label")
+        self.online_label.setStyleSheet("padding: 2px; color: gray; font-size: 15px;")
+        self.online_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
+        battery_label = QLabel(f"🔋 {robot['battery']}")
+        style = "padding: 2px; margin-left: 5px; font-size: 15px;"
+        if self.status_label.text() == "충전중":
+                style += "color: green;"        
+        battery_label.setStyleSheet(style)
+        battery_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
+        bottom_row.addWidget(self.online_label)
+        bottom_row.addWidget(battery_label)
 
         self.robot_layout.addLayout(bottom_row)
         self.setCursor(Qt.PointingHandCursor)
 
     def mousePressEvent(self, event):
         self.clicked.emit(self.robot_info["index"])
+
+class ClickableImageLabel(QLabel):
+    clicked = Signal(int, int)  # x, y 좌표
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setMouseTracking(True)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            x = event.position().x()
+            y = event.position().y()
+            self.clicked.emit(int(x), int(y))
