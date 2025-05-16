@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'llm_input'
+package_name = 'config'
 
 setup(
     name=package_name,
@@ -20,8 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'stt_node = llm_input.stt_node:main',
-            'stt_node_local = llm_input.stt_node_local:main',
+            'config_node = config.config_node:main',
         ],
     },
 )

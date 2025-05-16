@@ -1,48 +1,21 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-# flake8: noqa
-#
-# Copyright 2023 Herman Ye @Auromix
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# Description:
-# This is a configuration file for a conversational AI assistant
-# that uses the OpenAI API for generating responses.
-#
-# The user can specify the OpenAI language model to be used, the organization
-# under which their API key is registered (if applicable), and several parameters
-# that affect the creativity and coherence of the AI's responses, such as the
-# temperature, top probability cutoff, and frequency and presence penalties.
-#
-# The user can also specify the prompt given to the AI, the prefix for the AI's response,
-# and the maximum number of tokens and length allowed in the response.
-#
-# The chat history can be stored in a JSON file, with a maximum length limit.
-#
-# The assistant's behavior can be customized using a RobotBehavior object
-# and a list of robot functions.
-#
-# The API credentials for Amazon AWS are provided, along with parameters
-# for AWS S3, Transcribe, and Polly services, and parameters for audio recording.
-#
-# Author: Herman Ye @Auromix
-
 import os
 
 
 class UserConfig:
     def __init__(self):
+        # udp
+        self.server_ip = "192.168.0.43"
+        self.server_port = 9999
+        self.udp_ip = '192.168.0.57'
+        self.udp_port = 5000
+
+        self.frame_rate = 0.033  # 30 FPS
+        # robot 
+        self.robot_ip = 1
+        self.confidence_threshold = 0.8
+        self.trigger_word = "개놈아"
+        self.trigger_response = "네, 부르셨어요. 어르신"
+
         # OpenAI API related
         # [required]: OpenAI API key
         self.openai_api_key = os.getenv("gpt_key")
@@ -103,7 +76,7 @@ class UserConfig:
         # OpenAI Whisper Model size related
         # [optional]: OpenAI Whisper Model size: tiny base small medium large
         self.whisper_model_size = "medium"
-        # [optional]: OpenAI Whisper Model language: ko
+        # [optional]: OpenAI Whisper Model language: en
         self.whisper_language="ko"
         # Audio recording related
         # [optional]: Audio recording duration, in seconds

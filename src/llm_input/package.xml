@@ -4,7 +4,7 @@
   <name>llm_input</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="hhm9124@gmail.com">addinedu</maintainer>
+  <maintainer email="pinky@todo.todo">pinky</maintainer>
   <license>TODO: License declaration</license>
 
   <test_depend>ament_copyright</test_depend>
