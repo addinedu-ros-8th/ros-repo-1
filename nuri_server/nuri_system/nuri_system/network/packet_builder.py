@@ -9,6 +9,9 @@ class PacketBuilder:
         self.buf.write(struct.pack('>B', opcode))
 
     def write_byte(self, value: int):
+        self.buf.write(struct.pack('>b', value))
+
+    def write_ubyte(self, value: int):
         self.buf.write(struct.pack('>B', value))
 
     def write_char(self, value: str):
@@ -19,6 +22,9 @@ class PacketBuilder:
 
     def write_int(self, value: int):
         self.buf.write(struct.pack('>i', value))
+
+    def write_float(self, value: float):
+        self.buf.write(struct.pack('>f', value))
 
     def write_string(self, value: str):
         encoded = value.encode('utf-8')
