@@ -14,10 +14,15 @@ class RobotManager():
 
         self.robots[id].update(status, battery)
 
-    def update_location(self, id, x, y):
+    def update_location(self, id, position, orientation):
         if id in self.robots:
             if self.robots[id].online:
-                self.robots[id].update_location(x, y)
+                self.robots[id].update_location(position, orientation)
+
+    def get_idle_robot(self):
+        for robot in self.get_all_robots():
+            if robot.status == "대기" and robot.battery >= 70 and robot.online:
+                return robot.id
 
     def get_robot(self, id):
         return self.robots.get(id)
