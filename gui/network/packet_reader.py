@@ -7,6 +7,9 @@ class PacketReader:
         self.buf = io.BytesIO(data)
     
     def read_byte(self) -> int:
+        return struct.unpack('>b', self.buf.read(1))[0]
+    
+    def read_ubyte(self) -> int:
         return struct.unpack('>B', self.buf.read(1))[0]
     
     def read_char(self) -> str:
@@ -17,10 +20,18 @@ class PacketReader:
 
     def read_int(self) -> int:
         return struct.unpack('>i', self.buf.read(4))[0]
+    
+    def read_float(self) -> float:
+        return struct.unpack('>f', self.buf.read(4))[0]
 
     def read_string(self) -> str:
         length = struct.unpack('>H', self.buf.read(2))[0]
         return self.buf.read(length).decode('utf-8')
+    
+    def read_bool(self) -> bool:
+        byte = self.buf.read(1)
+        
+        return byte != b'\x00'
 
     def read_bytes(self) -> bytes:
         length_bytes = self.buf.read(4)
@@ -31,7 +42,7 @@ class PacketReader:
     def read_image(self) -> QPixmap:
         data = self.read_bytes()  # 이미지 크기 읽고, 데이터 읽기
         pixmap = QPixmap()
-        if not pixmap.loadFromData(data, "PNG"):
+        if not pixmap.loadFromData(data):
             raise ValueError("Failed to load image from data.")
         
         image = pixmap.toImage().convertToFormat(QImage.Format.Format_RGB32)

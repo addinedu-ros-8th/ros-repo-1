@@ -80,18 +80,95 @@ class Packet:
 
         return packet.get_packet()
     
-    def request_video(ipaddress):
+    def request_log_list(start, end, event_type, robot, keyword):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.LOG_SEARCH.value)
+        packet.write_string(start)
+        packet.write_string(end)
+        packet.write_string(event_type)
+        packet.write_byte(robot)
+        packet.write_string(keyword)
+
+        return packet.get_packet()
+    
+    def request_video(ipaddress, robot_id):
         packet = PacketBuilder()
 
         packet.write_opcode(Opcode.REQUEST_VIDEO.value)
         packet.write_string(ipaddress)
+        packet.write_byte(robot_id)
 
         return packet.get_packet()
     
-    def test(index):
+    def request_robot_list():
         packet = PacketBuilder()
 
-        packet.write_opcode(0x99)
-        packet.write_short(index)
+        packet.write_opcode(Opcode.ROBOT_LIST.value)
+
+        return packet.get_packet()
+    
+    def request_patrol_schedule():
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.PATROL_LIST.value)
+
+        return packet.get_packet()
+    
+    def regist_partrol(time):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.PATROL_REGIST.value)
+        packet.write_string(time)
+
+        return packet.get_packet()
+    
+    def unregist_patrol(time):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.PATROL_UNREGIST.value)
+        packet.write_string(time)
+
+        return packet.get_packet()
+    
+    def request_resident_name_list():
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.RESIDENT_NAME_LIST.value)
+
+        return packet.get_packet()
+    
+    def request_walk_schedule():
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.WALK_LIST.value)
+        
+        return packet.get_packet()
+    
+    def regist_walk(name, time):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.WALK_REGIST.value)
+        packet.write_string(name)
+        packet.write_string(time)
+
+        return packet.get_packet()
+    
+    def unregist_walk(name, time):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.WALK_UNREGIST.value)
+        packet.write_string(name)
+        packet.write_string(time)
+
+        return packet.get_packet()
+    
+    def send_goal_pose(x, y):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.GOAL_POSE.value)
+        packet.write_float(x)
+        packet.write_float(y)
+        packet.write_byte(1)
 
         return packet.get_packet()
