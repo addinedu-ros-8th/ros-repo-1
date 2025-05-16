@@ -1,19 +1,23 @@
+import cv2
+import numpy as np
+
 from handler.opcode import Opcode
 from network.packet import Packet
 from modules import UIFunctions
 
 from PySide6.QtWidgets import QTableWidgetItem, QMessageBox, QFrame
+from PySide6.QtGui import QImage, QPixmap
 from PySide6.QtCore import QDate, Qt
 from PySide6.QtNetwork import QNetworkInterface, QAbstractSocket
 
 class PacketHandler():
     def handle_packet(socket, parent, packet):
-        opcode = packet.read_byte()
+        opcode = packet.read_ubyte()
 
         if opcode == Opcode.CLIENT_HELLO.value:
             parent.socket.sendData(Packet.request_robot_list())
         elif opcode == Opcode.SEND_RESIDENT_INFO.value:
-            status = packet.read_byte()
+            status = packet.read_ubyte()
             
             if status == 0x00:
                 QMessageBox.information(None, "성공", "신규 입소자가 등록되었습니다.")
@@ -25,7 +29,7 @@ class PacketHandler():
                 QMessageBox.warning(None, "실패", "신규 입소자 등록에 실패했습니다. 다시 시도해주세요.")
 
         elif opcode == Opcode.RESIDENT_LIST.value:
-            status = packet.read_byte()
+            status = packet.read_ubyte()
 
             if status == 0x00:
                 parent.ui.tbResidentList.clearContents()
@@ -47,7 +51,7 @@ class PacketHandler():
             elif status == 0xFF:
                 QMessageBox.warning(None, "에러", "입소자 목록 조회에 실패했습니다. 다시 시도해주세요.")
         elif opcode == Opcode.REQUEST_RESIDENT_INFO.value:
-            status = packet.read_byte()
+            status = packet.read_ubyte()
 
             if status == 0x00:
                 name = packet.read_string()
@@ -66,7 +70,7 @@ class PacketHandler():
             else:
                 QMessageBox.warning(None, "에러", "입소자 상세조회에 실패했습니다. 다시 시도해주세요.")
         elif opcode == Opcode.REQUEST_DISCHARGE.value:
-            status = packet.read_byte()
+            status = packet.read_ubyte()
 
             if status == 0x00:
                 name = packet.read_string()
@@ -75,7 +79,7 @@ class PacketHandler():
             else:
                 QMessageBox.warning(None, "에러", "퇴소처리에 실패했습니다. 다시 시도해주세요.")
         elif opcode == Opcode.UPDATE_RESIDENT_INFO.value:
-            status = packet.read_byte()
+            status = packet.read_ubyte()
 
             if status == 0x00:
                 QMessageBox.information(None, "성공", "정보를 수정했습니다.")
@@ -83,7 +87,7 @@ class PacketHandler():
             else:
                 QMessageBox.warning(None, "에러", "입소자 정보 수정에 실패했습니다. 다시 시도해주세요.")
         elif opcode == Opcode.DELETE_RESIDENT.value:
-            status = packet.read_byte()
+            status = packet.read_ubyte()
 
             if status == 0x00:
                 name = parent.ui.lineEdit_4.text()
@@ -91,23 +95,35 @@ class PacketHandler():
                 parent.socket.sendData(Packet.request_resident_list())
             else:
                 QMessageBox.warning(None, "에러", "입소자 정보 삭제에 실패했습니다. 다시 시도해주세요.")
+        elif opcode == Opcode.RESIDENT_NAME_LIST.value:
+            status = packet.read_ubyte()
+
+            if status == 0x00:
+                size = packet.read_short()
+
+                parent.ui.walk_name_combo.clear()
+                for idx in range(size):
+                    name = packet.read_string()
+                    parent.ui.walk_name_combo.addItem(name)
+            else:
+                QMessageBox.warning(None, "에러", "알 수 없는 에러가 발생했습니다. 다시 시도해주세요.")
         elif opcode == Opcode.LOG_CATEGORY.value:
-            status = packet.read_byte()
+            status = packet.read_ubyte()
 
             if status == 0x00:
                 parent.ui.comboBox.clear()
                 parent.ui.comboBox_2.clear()
                 parent.ui.comboBox.addItem("전체")
                 parent.ui.comboBox_2.addItem("전체")
-                for type in range(packet.read_byte()):
+                for type in range(packet.read_ubyte()):
                     parent.ui.comboBox.addItem(packet.read_string())
 
-                for name in range(packet.read_byte()):
+                for name in range(packet.read_ubyte()):
                     parent.ui.comboBox_2.addItem(packet.read_string())
             else:
                 QMessageBox.warning(None, "에러", "알 수 없는 에러가 발생했습니다. 다시 시도해주세요.")
         elif opcode == Opcode.LOG_SEARCH.value:
-            status = packet.read_byte()
+            status = packet.read_ubyte()
 
             if status == 0x00:
                 parent.ui.tableWidget.clearContents()
@@ -120,7 +136,7 @@ class PacketHandler():
                 for idx in range(count):
                     parent.ui.tableWidget.insertRow(idx)
                     type = packet.read_string()
-                    robot_id = packet.read_byte()
+                    robot_id = packet.read_ubyte()
                     comment = packet.read_string()
                     date = packet.read_string()
 
@@ -135,7 +151,7 @@ class PacketHandler():
             if parent.is_emergency:
                 return
             
-            robot_id = packet.read_byte()
+            robot_id = packet.read_ubyte()
             type = packet.read_string()
 
             retval = QMessageBox.critical(None, "경고", str(robot_id) + "번 로봇이 '" + type + "' 감지!!\n카메라를 연결하시겠습니까?", QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
@@ -144,13 +160,13 @@ class PacketHandler():
                 parent.is_emergency = True
 
         elif opcode == Opcode.ROBOT_LIST.value:
-            size = packet.read_byte()
+            size = packet.read_ubyte()
             robots = []
 
             for index in range(size):
-                id = packet.read_byte()
+                id = packet.read_ubyte()
                 status = packet.read_string()
-                battery = packet.read_byte()
+                battery = packet.read_ubyte()
                 online = "online" if packet.read_bool() else "offline"
 
                 robots.append({'index' : index, 'name' : f"Robot {id}", 'status' : status, 'battery' : f"{battery}%", 'online' : online})
@@ -162,25 +178,33 @@ class PacketHandler():
             if parent.ui.stackedWidget.currentWidget().objectName() in ["home", "page"]:
                 parent.ui.map.clear_markers()
                 for idx in range(size):
-                    x = packet.read_short()
-                    y = packet.read_short()
+                    x = packet.read_float()
+                    y = packet.read_float()
+                    q_x = packet.read_float()
+                    q_y = packet.read_float()
+                    q_z = packet.read_float()
+                    q_w = packet.read_float()
 
-                    parent.ui.map.draw_marker(x, y, f"누리{idx}호")
+                    parent.ui.map.draw_marker(x, y, q_x, q_y, q_z, q_w, f"누리{idx}호")
         elif opcode == Opcode.PATROL_LIST.value:
-            size = packet.read_byte()
+            status = packet.read_ubyte()
+            if status == 0x00:
+                size = packet.read_ubyte()
 
-            parent.ui.patrol_table.clearContents()
-            parent.ui.patrol_table.setRowCount(0)
-            for idx in range(size):
-                parent.ui.patrol_table.insertRow(idx)
+                parent.ui.patrol_table.clearContents()
+                parent.ui.patrol_table.setRowCount(0)
+                for idx in range(size):
+                    parent.ui.patrol_table.insertRow(idx)
 
-                time = packet.read_string()
+                    time = packet.read_string()
 
-                item = QTableWidgetItem(time)
-                item.setTextAlignment(Qt.AlignCenter)
-                parent.ui.patrol_table.setItem(idx, 0, item)
+                    item = QTableWidgetItem(time)
+                    item.setTextAlignment(Qt.AlignCenter)
+                    parent.ui.patrol_table.setItem(idx, 0, item)
+            else:
+                QMessageBox.warning(None, "에러", "알 수 없는 에러가 발생했습니다. 다시 시도해주세요.")
         elif opcode == Opcode.PATROL_REGIST.value:
-            status = packet.read_byte()
+            status = packet.read_ubyte()
 
             if status == 0x00:
                 QMessageBox.information(None, "성공", "순찰 스케쥴이 등록되었습니다.")
@@ -188,7 +212,7 @@ class PacketHandler():
             else:
                 QMessageBox.warning(None, "에러", "알 수 없는 에러가 발생했습니다. 다시 시도해주세요.")
         elif opcode == Opcode.PATROL_UNREGIST.value:
-            status = packet.read_byte()
+            status = packet.read_ubyte()
 
             if status == 0x00:
                 QMessageBox.information(None, "성공", "해당 시간의 순찰이 취소되었습니다.")
@@ -196,3 +220,57 @@ class PacketHandler():
                 parent.socket.sendData(Packet.request_patrol_schedule())
             else:
                 QMessageBox.warning(None, "에러", "알 수 없는 에러가 발생했습니다. 다시 시도해주세요.")
+        elif opcode == Opcode.WALK_LIST.value:
+            status = packet.read_ubyte()
+            if status == 0x00:
+                size = packet.read_short()
+
+                parent.ui.walk_table.clearContents()
+                parent.ui.walk_table.setRowCount(0)
+                for idx in range(size):
+                    parent.ui.walk_table.insertRow(idx)
+
+                    name = packet.read_string()
+                    time = packet.read_string()
+                    
+                    item = QTableWidgetItem(name)
+                    item.setTextAlignment(Qt.AlignCenter)
+                    parent.ui.walk_table.setItem(idx, 0, item)
+
+                    item = QTableWidgetItem(time)
+                    item.setTextAlignment(Qt.AlignCenter)
+                    parent.ui.walk_table.setItem(idx, 1, item)
+            else:
+                QMessageBox.warning(None, "에러", "알 수 없는 에러가 발생했습니다. 다시 시도해주세요.")
+        elif opcode == Opcode.WALK_REGIST.value:
+            status = packet.read_ubyte()
+
+            if status == 0x00:
+                QMessageBox.information(None, "성공", "산책 스케줄이 등록되었습니다.")
+                parent.socket.sendData(Packet.request_walk_schedule())
+            else:
+                QMessageBox.warning(None, "에러", "알 수 없는 에러가 발생했습니다. 다시 시도해주세요.")
+        elif opcode == Opcode.WALK_UNREGIST.value:
+            status = packet.read_ubyte()
+
+            if status == 0x00:
+                QMessageBox.information(None, "성공", "대상자의 산책 스케줄이 취소되었습니다.")
+                parent.socket.sendData(Packet.request_walk_schedule())
+            else:
+                QMessageBox.warning(None, "에러", "알 수 없는 에러가 발생했습니다. 다시 시도해주세요.")
+        elif opcode == Opcode.MAP.value:
+            resolution = packet.read_float()
+            origin_x = packet.read_float()
+            origin_y = packet.read_float()
+            width = int(packet.read_float())
+            height = int(packet.read_float())
+            data = packet.read_bytes()
+
+            parent.ui.map.update_map_info(resolution, origin_x, origin_y, width, height)
+
+            np_img = np.frombuffer(data, dtype=np.uint8)
+            cv_img = cv2.imdecode(np_img, cv2.IMREAD_GRAYSCALE)
+            h, w = cv_img.shape
+            qimg = QImage(cv_img.data, w, h, w, QImage.Format_Grayscale8)
+            pixmap = QPixmap.fromImage(qimg)
+            parent.ui.label_display.setPixmap(pixmap)
