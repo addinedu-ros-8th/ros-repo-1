@@ -1,0 +1,37 @@
+# bridge_1.yaml
+from_domain: 1
+to_domain: 13
+topics:
+  state:
+    type: nuri_msgs/msg/NuriBotState
+    remap: /robot1/state
+  location:
+    type: nuri_msgs/msg/NuriBotLocation
+    remap: /robot1/location
+  tracked_pose:
+    type: geometry_msgs/msg/PoseStamped
+    remap: /robot1/tracked_pose
+  map:
+    type: nav_msgs/msg/OccupancyGrid
+    remap: /robot1/map
+
+  /robot1/emergency_msg:
+    from_domain: 13
+    to_domain: 1
+    type: std_msgs/msg/String
+    remap: /emergency_msg
+  status_list:
+    from_domain: 13
+    to_domain: 1
+    type: std_msgs/msg/String
+    remap: /robot1/status_list
+  patrol:
+    from_domain: 13
+    to_domain: 1
+    type: std_msgs/msg/Bool
+    remap: /robot1/patrol
+  /robot1/goal_pose:
+    from_domain: 13
+    to_domain: 2
+    type: geometry_msgs/msg/PoseStamped
+    remap: /goal_pose

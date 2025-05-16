@@ -1,6 +1,0 @@
-# bridge_2.yaml
-from_domain: 2
-to_domain: 13
-topics:
-  /robot2/state:
-    type: nuri_msgs/msg/RobotState
