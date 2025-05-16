@@ -26,7 +26,7 @@ class MainServerNode(Node):
 
         self.robot_manager = RobotManager()
 
-        robots = [1, 2]
+        robots = [int(x.strip()) for x in self.config['domain']['robot_id'].split(',')]
         self.robot_handler = RobotHandler(robots, self.robot_manager)
 
         # TCP 서버 시작
