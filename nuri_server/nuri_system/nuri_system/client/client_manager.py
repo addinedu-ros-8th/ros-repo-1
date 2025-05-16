@@ -46,7 +46,7 @@ class ClientManager:
 
         for key, handler in list(group.items()):
             try:
-                data += struct.pack('>H', len(key[0])) + key[0].encode('utf-8')
+                # data += struct.pack('>H', len(key[0])) + key[0].encode('utf-8')
                 handler.send(data)
             except Exception as e:
                 print(f"[BROADCAST ERROR] {target_group.upper()} {key} → {e}")
