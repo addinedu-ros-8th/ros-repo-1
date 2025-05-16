@@ -1,4 +1,4 @@
-int64 rebot_id
+uint8 robot_id
 string emergency_type 
 ---
 bool success 

@@ -4,11 +4,16 @@ import os
 class UserConfig:
     def __init__(self):
         # udp
-        self.server_ip = "192.168.0.43 "
+        self.server_ip = "192.168.0.43"
         self.server_port = 9999
+        self.udp_ip = '127.0.0.1'
+        self.udp_port = 5000
+
         self.frame_rate = 0.033  # 30 FPS
         # robot 
         self.robot_ip = 1
+        self.confidence_threshold = 0.8
+
         # OpenAI API related
         # [required]: OpenAI API key
         self.openai_api_key = os.getenv("gpt_key")
