@@ -2,5 +2,5 @@
 from_domain: 2
 to_domain: 13
 topics:
-  /robot2/chatter:
-    type: std_msgs/msg/String
+  /robot2/state:
+    type: nuri_msgs/msg/RobotState

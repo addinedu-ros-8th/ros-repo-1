@@ -1,23 +1,33 @@
+import os
 import rclpy
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 import socket
 import configparser
 import threading
+from ament_index_python.packages import get_package_share_directory
 
-from nuri_system.tcp_server.handler.socket_handler import SocketHandler
-from nuri_system.tcp_server.database.datbase_connection import NuriDatabase
+from nuri_system.robot.robot_manager import RobotManager
+from nuri_system.robot.robot_handler import RobotHandler
+from nuri_system.handler.socket_handler import SocketHandler
+from nuri_system.database.datbase_connection import NuriDatabase
 
 class MainServerNode(Node):
     def __init__(self):
         super().__init__('main_server_node')
 
         # config 로드
+        config_path = os.path.join(get_package_share_directory('nuri_system'), 'config', 'config.ini')
         self.config = configparser.ConfigParser()
-        self.config.read('config.ini')
+        self.config.read(config_path)
 
         # DB 연결
         self.initialize_database()
+
+        self.robot_manager = RobotManager()
+
+        robots = [int(x.strip()) for x in self.config['domain']['robot_id'].split(',')]
+        self.robot_handler = RobotHandler(robots, self.robot_manager)
 
         # TCP 서버 시작
         threading.Thread(target=self.start_server, daemon=True).start()
@@ -46,7 +56,7 @@ class MainServerNode(Node):
             self.get_logger().info(f"[TCP] 서버 시작: {host}:{port}")
             while True:
                 conn, addr = server.accept()
-                handler = SocketHandler(conn, addr, self)
+                handler = SocketHandler(conn, addr, self, self.robot_handler)
                 handler.start()
 
 
@@ -55,6 +65,7 @@ def main(args=None):
     node = MainServerNode()
     executor = MultiThreadedExecutor()
     executor.add_node(node)
+    executor.add_node(node.robot_handler)
     try:
         executor.spin()
     except KeyboardInterrupt:
