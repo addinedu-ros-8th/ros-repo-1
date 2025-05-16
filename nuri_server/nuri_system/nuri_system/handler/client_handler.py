@@ -1,6 +1,8 @@
+import cv2
 import datetime
 
 from std_msgs.msg import String
+from geometry_msgs.msg import PoseStamped
 
 from nuri_system.database.datbase_connection import NuriDatabase
 from nuri_system.handler.opcode import Opcode
@@ -28,6 +30,8 @@ class ClientHandler():
             ClientHandler.update_resident_info(handler, reader)
         elif opcode == Opcode.DELETE_RESIDENT.value:
             ClientHandler.delete_resident_info(handler, reader)
+        elif opcode == Opcode.RESIDENT_NAME_LIST.value:
+            ClientHandler.fetch_resident_name_list(handler, reader)
         elif opcode == Opcode.RESIDENT_HEALTH_INFO.value:
             ClientHandler.update_health_info(handler, reader, node)
         elif opcode == Opcode.PATROL_LIST.value:
@@ -36,6 +40,12 @@ class ClientHandler():
             ClientHandler.regist_patrol(handler, reader, node)
         elif opcode == Opcode.PATROL_UNREGIST.value:
             ClientHandler.unregist_patrol(handler, reader, node)
+        elif opcode == Opcode.WALK_LIST.value:
+            ClientHandler.fetch_walk_schedule(handler, reader, node)
+        elif opcode == Opcode.WALK_REGIST.value:
+            ClientHandler.regist_walk(handler, reader, node)
+        elif opcode == Opcode.WALK_UNREGIST.value:
+            ClientHandler.unregist_walk(handler, reader, node)
         elif opcode == Opcode.LOG_CATEGORY.value:
             ClientHandler.fetch_log_category(handler, reader, node)
         elif opcode == Opcode.LOG_SEARCH.value:
@@ -46,6 +56,8 @@ class ClientHandler():
             ClientHandler.request_video(handler, reader, node)
         elif opcode == Opcode.ROBOT_LIST.value:
             ClientHandler.fetch_robot_list(handler, reader, node)
+        elif opcode == Opcode.GOAL_POSE.value:
+            ClientHandler.send_goal_pose(handler, reader, node)
 
     @staticmethod
     def client_hello(handler, reader, node):
@@ -61,6 +73,9 @@ class ClientHandler():
         node.get_logger().info(f"[CONNECTED] type : {type}, {handler.addr}")
 
         handler.send(ClientPacket.send_hello())
+        # img = cv2.imread('map.jpg')
+        # _, img_bytes = cv2.imencode('.jpg', img)
+        handler.send(ClientPacket.send_map(handler.robot_handler.map_info, handler.robot_handler.map_jpg))
 
     @staticmethod
     def fetch_resident_list(handler, reader):
@@ -198,6 +213,21 @@ class ClientHandler():
         handler.send(ClientPacket.delete_resident_info_result(status))
 
     @staticmethod
+    def fetch_resident_name_list(handler, reader):
+        conn = NuriDatabase.get_instance()
+
+        status = 0x00
+        result = None
+
+        try:
+            query = "SELECT name FROM residents"
+            result = conn.fetch_all(query)
+        except:
+            status = 0xFF
+
+        handler.send(ClientPacket.send_resident_name_list(status, result))
+
+    @staticmethod
     def update_health_info(handler, reader, node):
         conn = NuriDatabase.get_instance()
         resident_id = reader.read_byte()
@@ -205,7 +235,7 @@ class ClientHandler():
         oxygen = reader.read_int()
         temperature = reader.read_float()
 
-        node.get_logger().info(f"{resident_id} {heart_rate} {oxygen} {temperature}")
+        # node.get_logger().info(f"{resident_id} {heart_rate} {oxygen} {temperature}")
 
         # handler.send(ClientPacket.test2(200))
 
@@ -216,7 +246,7 @@ class ClientHandler():
         status = 0x00
 
         try:
-            query = "SELECT type FROM log_event"
+            query = "SELECT name FROM job_category"
             type = conn.fetch_all(query)
             type = [row[0] for row in type]
 
@@ -245,22 +275,22 @@ class ClientHandler():
 
         try:
             query = """
-            SELECT e.type, l.robot_id, l.comment, l.created_at 
-            FROM logs l, log_event e 
-            WHERE l.event_id = e.id and l.created_at >= %s or l.created_at <= %s
+            SELECT j.name, l.robot_id, l.comment, l.created_at 
+            FROM logs l, job_category j 
+            WHERE l.job_id = j.id and (l.created_at >= %s or l.created_at <= %s)
             """
             if event_type != "전체":
-                query += "AND l.event_type = %s "
+                query += " AND j.name = %s "
                 param.append(event_type)
             if robot != 0:
-                query += "AND l.robot_id = %s "
+                query += " AND l.robot_id = %s "
                 param.append(robot)
             if keyword != "":
-                query += "AND l.comment LINE '%s' "
+                query += " AND l.comment LIKE '%s' "
                 keyword_param = f"%{keyword}%"
                 param.append(keyword_param)
 
-            result = conn.fetch_all(query, (start, end))
+            result = conn.fetch_all(query, tuple(param))
         except Exception as e:
             node.get_logger().info(f"{e}")
             status = 0xFF
@@ -309,7 +339,7 @@ class ClientHandler():
         result = None
 
         try:
-            query = "SELECT scheduled_time FROM schedule order by scheduled_time ASC"
+            query = "SELECT scheduled_time FROM schedule WHERE job_id = 4 order by scheduled_time ASC"
             result = conn.fetch_all(query)
         except:
             status = 0xFF
@@ -331,7 +361,7 @@ class ClientHandler():
             status = 0xFF
 
         handler.send(ClientPacket.regist_patrol_result(status))
-        handler.robot_handler.update_patrol_time()
+        handler.robot_handler.update_schedule_time()
 
     @staticmethod
     def unregist_patrol(handler, reader, node):
@@ -349,4 +379,93 @@ class ClientHandler():
 
         handler.send(ClientPacket.unregist_patrol_result(status))
 
-        handler.robot_handler.update_patrol_time()
+        handler.robot_handler.update_schedule_time()
+
+    @staticmethod
+    def fetch_walk_schedule(handler, reader, node):
+        conn = NuriDatabase.get_instance()
+
+        status = 0x00
+        result = None
+
+        try:
+            query = """
+                SELECT r.name, DATE_FORMAT(s.scheduled_time, '%H:%i')
+                FROM residents r, schedule s, walk_schedule ws 
+                WHERE s.id = ws.schedule_id 
+                AND r.id = ws.user_id 
+                ORDER BY s.scheduled_time ASC
+            """
+            result = conn.fetch_all(query)
+        except Exception as e:
+            status = 0xFF
+            node.get_logger().info(f'{e}')
+
+        handler.send(ClientPacket.send_walk_schedule(status, result))
+
+    @staticmethod
+    def regist_walk(handler, reader, node):
+        conn = NuriDatabase.get_instance()
+        name = reader.read_string()
+        time = reader.read_string()
+
+        status = 0x00
+
+        try:
+            query = "INSERT INTO schedule(job_id, scheduled_time) VALUES(2, %s)"
+            id = conn.execute_query(query, (time,))
+
+            query = "INSERT INTO walk_schedule(schedule_id, user_id) VALUES(%s, (SELECT id FROM residents WHERE name = %s))"
+            conn.execute_query(query, (id, name))
+        except Exception as e:
+            conn.rollback()
+            status = 0xFF
+            node.get_logger().info(f'{e}')
+
+        handler.send(ClientPacket.regist_walk_result(status))
+        handler.robot_handler.update_schedule_time()
+
+    @staticmethod
+    def unregist_walk(handler, reader, node):
+        conn = NuriDatabase.get_instance()
+        name = reader.read_string()
+        time = reader.read_string()
+
+        status = 0x00
+
+        try:
+            query = """
+                DELETE FROM schedule 
+                WHERE id = (
+                    SELECT w.schedule_id 
+                    FROM walk_schedule w, residents r, schedule s 
+                    WHERE r.id = w.user_id 
+                    AND r.name = %s 
+                    AND s.scheduled_time = %s 
+                    AND w.schedule_id = s.id
+                )
+            """
+            conn.execute_query(query, (name, time))
+        except Exception as e:
+            status = 0xFF
+            conn.rollback()
+            node.get_logger().info(f'{e}')
+
+        handler.send(ClientPacket.unregist_walk_result(status))
+        handler.robot_handler.update_schedule_time()
+
+    @staticmethod
+    def send_goal_pose(handler, reader, node):
+        goal_x = reader.read_float()
+        goal_y = reader.read_float()
+        robot_id = reader.read_byte()
+
+        pub = node.create_publisher(PoseStamped, f'/robot{robot_id}/goal_pose', 10)
+        goal_pose = PoseStamped()
+        goal_pose.header.frame_id = 'map'
+        goal_pose.pose.position.x = goal_x
+        goal_pose.pose.position.y = goal_y
+
+        pub.publish(goal_pose)
+
+        node.get_logger().info(f'{robot_id} {goal_x} {goal_y}')
