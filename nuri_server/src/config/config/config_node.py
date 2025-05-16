@@ -6,15 +6,13 @@ class UserConfig:
         # udp
         self.server_ip = "192.168.0.43"
         self.server_port = 9999
-        self.udp_ip = '192.168.0.57'
+        self.udp_ip = '127.0.0.1'
         self.udp_port = 5000
 
         self.frame_rate = 0.033  # 30 FPS
         # robot 
         self.robot_ip = 1
         self.confidence_threshold = 0.8
-        self.trigger_word = "개놈아"
-        self.trigger_response = "네, 부르셨어요. 어르신"
 
         # OpenAI API related
         # [required]: OpenAI API key
