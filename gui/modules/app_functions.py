@@ -47,3 +47,5 @@ class AppFunctions():
         ui.btn_log_search.clicked.connect(lambda: UIFunctions.click_log_search(main_window))
         ui.patrol_register_button.clicked.connect(lambda: UIFunctions.click_patrol_register(main_window))
         ui.patrol_cancel_button.clicked.connect(lambda: UIFunctions.click_patrol_cancel(main_window))
+        ui.walk_register_button.clicked.connect(lambda: UIFunctions.click_walk_register(main_window))
+        ui.walk_cancel_button.clicked.connect(lambda: UIFunctions.click_walk_cancel(main_window))
