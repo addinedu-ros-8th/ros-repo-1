@@ -7,6 +7,9 @@ class PacketReader:
         self.buf = io.BytesIO(data)
     
     def read_byte(self) -> int:
+        return struct.unpack('>b', self.buf.read(1))[0]
+    
+    def read_ubyte(self) -> int:
         return struct.unpack('>B', self.buf.read(1))[0]
     
     def read_char(self) -> str:
@@ -17,6 +20,9 @@ class PacketReader:
 
     def read_int(self) -> int:
         return struct.unpack('>i', self.buf.read(4))[0]
+    
+    def read_float(self) -> float:
+        return struct.unpack('>f', self.buf.read(4))[0]
 
     def read_string(self) -> str:
         length = struct.unpack('>H', self.buf.read(2))[0]
