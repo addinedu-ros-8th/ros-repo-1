@@ -130,3 +130,45 @@ class Packet:
         packet.write_string(time)
 
         return packet.get_packet()
+    
+    def request_resident_name_list():
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.RESIDENT_NAME_LIST.value)
+
+        return packet.get_packet()
+    
+    def request_walk_schedule():
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.WALK_LIST.value)
+        
+        return packet.get_packet()
+    
+    def regist_walk(name, time):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.WALK_REGIST.value)
+        packet.write_string(name)
+        packet.write_string(time)
+
+        return packet.get_packet()
+    
+    def unregist_walk(name, time):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.WALK_UNREGIST.value)
+        packet.write_string(name)
+        packet.write_string(time)
+
+        return packet.get_packet()
+    
+    def send_goal_pose(x, y):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.GOAL_POSE.value)
+        packet.write_float(x)
+        packet.write_float(y)
+        packet.write_byte(1)
+
+        return packet.get_packet()
