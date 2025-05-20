@@ -1,5 +1,9 @@
 # ros-repo-1
-ROS 프로젝트 1조 저장소. 팀 BLACK PIG
+ROS 프로젝트 1조 저장소. 팀 BLACK PIG \
+![ROS2](https://img.shields.io/badge/ROS2-jazzy-blue?logo=ros&logoColor=white)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)
+
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
@@ -10,7 +14,7 @@ ROS 프로젝트 1조 저장소. 팀 BLACK PIG
   <h3 align="center">요양병원 AI 보조로봇(Nursing AI Assistant)</h3>
 
   <p align="center">
-    <a href="">Presentation</a>
+    <a href="https://docs.google.com/presentation/d/1I2sNBpPB-KJUQkXDyhFU6J7U_7m9f__Qezk_5R1yaMA/edit?slide=id.g35a51b25e1e_0_0#slide=id.g35a51b25e1e_0_0">Presentation</a>
   </p>
 </p>
 
