@@ -8,7 +8,7 @@ ROS 프로젝트 1조 저장소. 팀 BLACK PIG \
 <br />
 <p align="center">
   <a href="https://github.com/addinedu-ros-8th/ros-repo-1">
-    <img src="https://github.com/addinedu-ros-8th/ros-repo-1/blob/main/careGiver.gif" alt="Logo" width="500px">
+    <img src="https://github.com/addinedu-ros-8th/ros-repo-1/blob/main/careGiver.gif" alt="Logo" width="700px" height="300px">
   </a>
 
   <h3 align="center">요양병원 AI 보조로봇(Nursing AI Assistant)</h3>
@@ -21,7 +21,7 @@ ROS 프로젝트 1조 저장소. 팀 BLACK PIG \
 <hr>
 
 <!-- ABOUT THE PROJECT -->
-## Preview
+## Overview
 
 
 ROS 기반 요양보호사 보조 로봇
@@ -34,63 +34,66 @@ ROS 기반 요양보호사 보조 로봇
 
 | position | name | job |
 |:-----:|------|-----|
-| leader | 이정림 |  |   
+| leader | 이정림 |   |   
 | worker | 심재헌 |   |   
 | worker | 신동철 |   |    
 | worker | 황한문 |   |    
 
 Project Period: 2025.04.16~2025.05.27
+<br>
 
-## Instructions
-### Environment   
-- Dev: PyQt/Qt 5 Designer - python
-- DB: AWS RDS - MySQL
-- Collab: Jira, Confluence and Slack   
-- OS: Ubuntu 24.04
-### Installation 
-```bash 
+## Requirements
+- ROS2(Jazzy): https://docs.ros.org/en/jazzy/index.html
+- Robot Courtesy by <a href="https://pinklab.art/?page_id=5849"> PINKLAB </a>
+<img src="https://github.com/user-attachments/assets/cba18e75-6183-4275-9e25-5836891e04e6" width="300">
+
+
+## Installation
+1. Create Python env:
+``` 
+    python3 -m venv <name>
+    source ~/venv/<name>/bin/activate
+```
+2. Clone this repository:
+``` 
     git clone https://github.com/addinedu-ros-8th/deeplearning-repo-1.git
     code deeplearning-repo-1
 ```
-#### python env 
-```bash 
-    mkdir <venv> 
-    cd <venv>
-    python -m venv <env>
-    source ~/<venv>/<env>/bin/activate
-```
-#### Qt Designer 
-- Linux  
-```bash 
-    sudo apt install qttools5-dev-tools
-    sudo apt install qttools5-dev
-```
+3. Install dependencies:
+ ```
+     pip install -r requirements.txt
+ ```
 
-#### pip requirements
+## Usage
+
+Run the main script:
+
 ```bash
-    pip install pyqt5
-    pip install opencv-headless 
-    pip install mediapipe
-    pip install numpy
-    pip install gTTS
-    pip install pydub
-    pip install tensorflow
-    pip install mysql
-    pip install matplotlib
+    ros2 run nuri_bot main_node
+    ros2 run ai_server server 
 ```
 
-## 주요 기능 
+## Project Structure
+<table>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/f8328f8f-84b7-4b65-892a-0dbe00d41cb3" width="300"></td>
+    <td><img src="https://github.com/user-attachments/assets/b32a9728-d3cf-4545-bb27-ef4b69a7ec96" width="300"></td>
+  </tr>
+  <tr>
+    <td align="center">Ai_server</td>
+    <td align="center">nuri_bot</td>
+  </tr>
+</table>
 
 
-
-
-## 설계
-### 시나리오
+## Design
 
 ### Architecture  
 #### 1) System Atchitecture
-#### 2) ERD 
+<img src="https://github.com/user-attachments/assets/184821ce-828f-4e05-aeaf-ebe9dee90a48" width="500">
 
+#### 2) ERD 
+<img src="https://github.com/user-attachments/assets/70b99f40-37bd-4938-9218-5cdb82130c1c" width="900">
 
  
 
