@@ -1,8 +1,9 @@
-# ros-repo-1
-ROS 프로젝트 1조 저장소. 팀 BLACK PIG \
+# ROS 프로젝트 1조 저장소. 팀 BLACK PIG
 ![ROS2](https://img.shields.io/badge/ROS2-jazzy-blue?logo=ros&logoColor=white)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-24.04-E95420?style=flat-square&logo=ubuntu&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white)\
+![SLAM&Navigation](https://img.shields.io/badge/SLAM&Navigation-grey?logo=ros&logoColor=white)
+![yolo](https://img.shields.io/badge/yolo-grey?logo=yolo&logoColor=white)
 
 <!-- PROJECT LOGO -->
 <br />
@@ -78,10 +79,12 @@ Run the main script:
   <tr>
     <td><img src="https://github.com/user-attachments/assets/f8328f8f-84b7-4b65-892a-0dbe00d41cb3" width="300"></td>
     <td><img src="https://github.com/user-attachments/assets/b32a9728-d3cf-4545-bb27-ef4b69a7ec96" width="300"></td>
+    <td><img src="https://github.com/user-attachments/assets/b9585b2b-6db7-4c05-a505-c576dede9ad1" width="300"></td>
   </tr>
   <tr>
     <td align="center">Ai_server</td>
     <td align="center">nuri_bot</td>
+    <td align="center">nuri_io_controller</td>
   </tr>
 </table>
 
@@ -90,10 +93,10 @@ Run the main script:
 
 ### Architecture  
 #### 1) System Atchitecture
-<img src="https://github.com/user-attachments/assets/184821ce-828f-4e05-aeaf-ebe9dee90a48" width="500">
+<img src="https://github.com/user-attachments/assets/6a3c3848-cbd6-4c5f-b20f-647442e2d375" width="500">
 
 #### 2) ERD 
-<img src="https://github.com/user-attachments/assets/70b99f40-37bd-4938-9218-5cdb82130c1c" width="900">
+<img src="https://github.com/user-attachments/assets/02708103-1585-4e23-9ed0-a95824b2a708" width="900">
 
  
 
