@@ -12,7 +12,7 @@
     <img src="https://github.com/addinedu-ros-8th/ros-repo-1/blob/main/careGiver.gif" alt="Logo" width="700px" height="300px">
   </a>
 
-  <h3 align="center">요양병원 AI 보조로봇(Nursing AI Assistant)</h3>
+  <h1 align="center">요양병원 AI 보조 시스템(Nursing AI Assistant System)</h1>
 
   <p align="center">
     <a href="https://docs.google.com/presentation/d/1I2sNBpPB-KJUQkXDyhFU6J7U_7m9f__Qezk_5R1yaMA/edit?slide=id.g35a51b25e1e_0_0#slide=id.g35a51b25e1e_0_0">Presentation</a>
@@ -21,6 +21,11 @@
 
 <hr>
 
+<!-- ABOUT THE PROJECT -->
+## Overview
+
+
+---
 <!-- ABOUT THE PROJECT -->
 ## Overview
 
