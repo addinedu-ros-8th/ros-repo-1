@@ -1,0 +1,7 @@
+# Request
+uint8 robot_id
+string distance_type  # "far" 또는 "close"
+---
+# Response
+bool success
+string message

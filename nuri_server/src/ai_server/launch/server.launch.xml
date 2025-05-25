@@ -1,0 +1,10 @@
+<?xml version='1.0' ?>
+
+<launch>
+    <node pkg="ai_server" exec="udp_server_node">
+    </node>
+    <node pkg="ai_server" exec="tcp_server_node">
+    </node>
+    <node pkg="ai_server" exec="ros_server_node">
+    </node>
+</launch>

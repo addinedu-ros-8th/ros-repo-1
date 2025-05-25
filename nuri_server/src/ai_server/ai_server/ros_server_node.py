@@ -72,22 +72,7 @@ class LLMNode(Node):
         # LLM feedback for user publisher
         self.llm_feedback_publisher = self.create_publisher(
             String, "/llm_feedback_to_user", 0)
-        
-    #     # ChatGPT function call client
-    #     # When function call is detected
-    #     # ChatGPT client will call function call service in robot node
-    #     self.function_call_client = self.create_client(
-    #         ChatGPT, "/ChatGPT_function_call_service"
-    #     )
-    #     # self.function_call_future = None
-    #     # Wait for function call server to be ready
-    #     # while not self.function_call_client.wait_for_service(timeout_sec=1.0):
-    #     #     self.get_logger().info(
-    #     #         "ChatGPT Function Call Server(ROBOT NODE) not available, waiting again..."
-    #     #     )
-    #     self.function_call_requst = ChatGPT.Request()  # Function call request
-    #     self.get_logger().info("ChatGPT Function Call Server is ready")
-
+      
         # ChatGPT output publisher
         # When feedback text to user is detected
         # ChatGPT node will publish feedback text to output node
@@ -104,26 +89,13 @@ class LLMNode(Node):
         self.chat_history_file = os.path.join(
             config.chat_history_path, f"chat_history_{self.start_timestamp}.json"
         )
-    #     self.write_chat_history_to_json()
-    #     self.get_logger().info(f"Chat history saved to {self.chat_history_file}")
-
-    #     # Function name
-    #     self.function_name = "null"
-    #     # Initialization ready
-    #     self.publish_string("llm_model_processing", self.initialization_publisher)
+        self.write_chat_history_to_json()
+        self.get_logger().info(f"Chat history saved to {self.chat_history_file}")
 
     def state_listener_callback(self, msg):
         self.get_logger().debug(f"model node get current State:{msg}")
-        # TODO
 
-    def publish_string(self, string_to_send, publisher_to_use):
-        msg = String()
-        msg.data = string_to_send
 
-        publisher_to_use.publish(msg)
-        self.get_logger().info(
-            f"Topic: {publisher_to_use.topic_name}\nMessage published: {msg.data}"
-        )
 
     def add_message_to_history(
         self, role, content="null", function_call=None, name=None
@@ -195,32 +167,7 @@ class LLMNode(Node):
         message = chatgpt_response.choices[0].message 
         content = message.content
         return message, content
-        # function_call = message.function_call
 
-        # Initializing function flag, 0: no function call, 1: function call
-        # function_flag = 0
-
-        # If the content is not None, then the response is text
-        # If the content is None, then the response is function call
-        # if content is not None:
-        #     function_flag = 0
-        #     self.get_logger().info("OpenAI response type: TEXT")
-        # else:
-        #     function_flag = 1
-        #     self.get_logger().info("OpenAI response type: FUNCTION CALL")
-        # # Log
-        # self.get_logger().info(
-        #     f"Get message from OpenAI: {message}, type: {type(message)}"
-        # )
-        # self.get_logger().info(
-        #     f"Get content from OpenAI: {content}, type: {type(content)}"
-        # )
-        # self.get_logger().info(
-        #     f"Get function call from OpenAI: {function_call}, type: {type(function_call)}"
-        # )
-
-        # return message, content, function_call, function_flag
-        
     def write_chat_history_to_json(self):
         """
         Write the chat history to a JSON file.
@@ -240,52 +187,6 @@ class LLMNode(Node):
             # Error writing chat history to JSON
             self.get_logger().error(f"Error writing chat history to JSON: {error}")
             return False
-
-    # def function_call(self, function_call_input):
-    #     """
-    #     Sends a function call request with the given input and waits for the response.
-    #     When the response is received, the function call response callback is called.
-    #     """
-    #     # JSON object to string
-    #     function_call_input_str = json.dumps(function_call_input)
-    #     # Get function name
-    #     self.function_name = function_call_input["name"]
-    #     # Send function call request
-    #     self.function_call_requst.request_text = function_call_input_str
-    #     self.get_logger().info(
-    #         f"Request for ChatGPT_function_call_service: {self.function_call_requst.request_text}"
-    #     )
-    #     future = self.function_call_client.call_async(self.function_call_requst)
-    #     future.add_done_callback(self.function_call_response_callback)
-
-    # def function_call_response_callback(self, future):
-    #     """
-    #     The function call response callback is called when the function call response is received.
-    #     the function_call_response_callback will call the gpt service again
-    #     to get the text response to user
-    #     """
-    #     try:
-    #         response = future.result()
-    #         self.get_logger().info(
-    #             f"Response from ChatGPT_function_call_service: {response}"
-    #         )
-
-    #     except Exception as e:
-    #         self.get_logger().info(f"ChatGPT function call service failed {e}")
-
-    #     response_text = "null"
-    #     self.add_message_to_history(
-    #         role="function",
-    #         name=self.function_name,
-    #         content=str(response_text),
-    #     )
-    #     # Generate chat completion
-    #     second_chatgpt_response = self.generate_chatgpt_response(config.chat_history)
-    #     # Get response information
-    #     message, text, function_call, function_flag = self.get_response_information(
-    #         second_chatgpt_response
-    #     )
-    #     self.publish_string(text, self.llm_feedback_publisher)
 
     def llm_callback(self, msg):
         """
@@ -321,25 +222,16 @@ class LLMNode(Node):
         # self.get_logger().info("STATE: feedback_for_user")
         # self.publish_string(llm_response_type, self.llm_response_type_publisher)
         self.publish_string(text, self.llm_feedback_publisher)
-        # if function_flag == 1:
-        #     # Write response text to GPT service response
-        #     llm_response_type = "function_call"
-        #     self.publish_string(llm_response_type, self.llm_response_type_publisher)
-
-        #     # Robot function call
-        #     # Log function execution
-        #     self.get_logger().info("STATE: function_execution")
-        #     self.function_call(function_call)
-        # else:
-        #     # Return text response
-        #     llm_response_type = "feedback_for_user"
-        #     # Log feedback_for_user
-        #     self.get_logger().info("STATE: feedback_for_user")
-        #     self.publish_string(llm_response_type, self.llm_response_type_publisher)
-        #     self.publish_string(text, self.llm_feedback_publisher)
-        #     # self.publish_string(json.dumps(text), self.llm_feedback_publisher)
 
 
+    def publish_string(self, string_to_send, publisher_to_use):
+        msg = String()
+        msg.data = string_to_send
+
+        publisher_to_use.publish(msg)
+        self.get_logger().info(
+            f"Topic: {publisher_to_use.topic_name}\nMessage published: {msg.data}"
+        )
 def main(args=None):
     rclpy.init(args=args)
     chatgpt = LLMNode()

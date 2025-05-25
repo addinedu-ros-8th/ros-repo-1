@@ -1,5 +1,0 @@
-uint8 robot_id
-string emergency_type 
----
-bool success 
-string message 

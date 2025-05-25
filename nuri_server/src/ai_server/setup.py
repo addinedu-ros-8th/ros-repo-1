@@ -1,4 +1,5 @@
 from setuptools import find_packages, setup
+import os, glob
 
 package_name = 'ai_server'
 
@@ -10,7 +11,7 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        
+        ('share/' + package_name + '/launch', glob.glob(os.path.join('launch', '*.launch.xml'))),        
     ],
     install_requires=['setuptools'],
     zip_safe=True,
