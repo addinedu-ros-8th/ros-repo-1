@@ -23,7 +23,7 @@
 
 <!-- ABOUT THE PROJECT -->
 ## Overview
-### 프로젝트 주제 및 선정 배경
+#### 프로젝트 주제 및 선정 배경
 <img src="https://github.com/user-attachments/assets/10fedff1-ca7e-4a37-8f4f-fa48211b649f" width="400">
 <img src="https://github.com/user-attachments/assets/662e9007-1f6f-4530-baf1-40958fe352da" width="400">                
 
@@ -33,7 +33,7 @@
  -> **위와 같은 문제를 해결할 방안을 고민해 보고자 프로젝트 구성**
 
 
-### 시스템 소개
+#### 시스템 소개
 <table>
   <tr>
     <td width="40%">
@@ -54,7 +54,7 @@
 </table>
 
  
-### 기능 리스트
+#### 기능 리스트
 <table>
   <tr>
     <th width="30%">기능 항목</th>
@@ -130,15 +130,15 @@
   </tr>
 </table>
 
-### 결과 영상
+#### 결과 영상
 <table>
   <tr>
     
   </tr>
 </table>
 
-### 프로젝트 실행
-#### Requirements
+#### 프로젝트 실행
+###### Requirements
 <table>
   <tr>
     <td width="60%">
@@ -153,7 +153,7 @@
   </tr>
 </table>
 
-#### Installation
+###### Installation
 1. Create Python env:
 ``` 
     python3 -m venv <name>
@@ -169,7 +169,7 @@
      pip install -r requirements.txt
  ```
 
-#### Usage
+###### Usage
 
 Run the main script:
 
@@ -180,13 +180,14 @@ Run the main script:
 <hr>
 
 ## 프로젝트 설계
-### 시스템 아키텍처
+#### 시스템 아키텍처
 <table>
   <tr>
     <td width="60%">
       <img src="https://github.com/user-attachments/assets/35fb0dd5-97a6-400d-ae11-ac6dc091f7c3" width="100%">
     </td>
     <td width="40%">
+      전체 시스템 아키텍처
       <ul>
         <li>하나의 시스템은 총 3대의 컴퓨터, 1대의 로봇, 1개의 유저 디바이스(와치)로 구성</li>
         <li>통신은 영상은 UDP, 유저 디바이스와 컴퓨터들 간은 TCP, 로봇과의 통신은 ROS 통신으로 구성</li>
@@ -201,22 +202,17 @@ Run the main script:
       UDP 통신
       <ul>
         <li>영상 데이터 전달 위한 통신</li>
-        <li>하나의 시스템은 총 3대의 컴퓨터, 1대의 로봇, 1개의 유저 디바이스(와치)로 구성</li>
-        <li>통신은 영상은 UDP, 유저 디바이스와 컴퓨터들 간은 TCP, 로봇과의 통신은 ROS 통신으로 구성</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <img src="https://github.com/user-attachments/assets/f3a01e72-4acc-4e73-93ac-dbfcd94b5c0d" width="100%">
-    </td>
-    <td>
-      TCP 통신
-      <ul>
-        <li>하나의 시스템은 총 3대의 컴퓨터, 1대의 로봇, 1개의 유저 디바이스(와치)로 구성</li>
-        <li>하나의 시스템은 총 3대의 컴퓨터, 1대의 로봇, 1개의 유저 디바이스(와치)로 구성</li>
-        <li>하나의 시스템은 총 3대의 컴퓨터, 1대의 로봇, 1개의 유저 디바이스(와치)로 구성</li>
-        <li>통신은 영상은 UDP, 유저 디바이스와 컴퓨터들 간은 TCP, 로봇과의 통신은 ROS 통신으로 구성</li>
+        <li>Nuribot -> AI Server
+          <ul style="list-style-type: circle;">
+            <li>Human Following 기능을 위한 후방 카메라 영상 전송</li>
+            <li>Fire, Fall Detection 기능을 위한 전방 카메라 영상 전송</li>
+          </ul>
+        </li>
+        <li>Nuri Controller -> Nurse GUI
+          <ul style="list-style-type: circle;">
+            <li>GUI 화면에서 실시간으로 볼 수 있도록 전방 카메라 영상 전송</li>
+          </ul>
+        </li>
       </ul>
     </td>
   </tr>
@@ -228,14 +224,48 @@ Run the main script:
       ROS 통신
       <ul>
         <li>제어 명렁 및 로봇 상태 데이터 전달을 위한 통신</li>
+        <li>Nuribot -> AI Server
+          <ul style="list-style-type: circle;">
+            <li>LLM 기반 어르신 대화 기능을 위한 데이터 전송</li>
+          </ul>
+        </li>
+        <li>Nuribot -> Main Server
+          <ul style="list-style-type: circle;">
+            <li>누리봇에 작업을 할당하고 작업에 필요한 데이터 전송</li>
+          </ul>
+        </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/f3a01e72-4acc-4e73-93ac-dbfcd94b5c0d" width="100%">
+    </td>
+    <td>
+      TCP 통신
+      <ul>
         <li>하나의 시스템은 총 3대의 컴퓨터, 1대의 로봇, 1개의 유저 디바이스(와치)로 구성</li>
-        <li>통신은 영상은 UDP, 유저 디바이스와 컴퓨터들 간은 TCP, 로봇과의 통신은 ROS 통신으로 구성</li>
+        <li>Main Server -> User PC
+          <ul style="list-style-type: circle;">
+            <li>로봇에 이동을 지시하고 로봇 상태 및 DB 정보를 GUI에 표시하기 위한 데이터 전송</li>
+          </ul>
+        </li>
+        <li>Main Server -> Nuriwatch
+          <ul style="list-style-type: circle;">
+            <li>건강 정보 전송 및 비상 알림 기능을 위한 데이터 전송</li>
+          </ul>
+        </li>
+        <li>AI Server -> Main Server
+          <ul style="list-style-type: circle;">
+            <li>비상 이벤트 데이터 전송</li>
+          </ul>
+        </li>
       </ul>
     </td>
   </tr>
 </table>
 
-### ER Diagram
+#### ER Diagram
 <table>
   <tr>
     <td width="60%">
@@ -306,40 +336,40 @@ Run the main script:
 <hr>
 
 ## 기능 및 기술 설명
-### 전체 시나리오
+#### 전체 시나리오
 
-### 기본 주행
+#### 기본 주행
 
-### 순찰
+#### 순찰
 
-### 호출
+#### 호출
 
-### 위험 상황 감지
+#### 위험 상황 감지
 
-### 산책
+#### 산책
 
-### 대화
+#### 대화
 
-### 건강 상태 모니터링
+#### 건강 상태 모니터링
 
 <hr>
 
 ## 문제 상황 및 해결 방안
-### 주행
+#### 주행
 
-### AI
+#### AI
 
-### 건강 상태 모니터링
+#### 건강 상태 모니터링
 
 <hr>
 
 ## TEAM. BLACK PIG
 | position | name | job | contacts |
 |:-----:|------|-----|-----|
-| leader | 이정림 |   |   |
-| worker | 심재헌 |   |   |
-| worker | 신동철 |   |   |
-| worker | 황한문 |   |   |
+| leader | 이정림 | 프로젝트 설계<br>유저 디바이스 구현<br>PPT 제작<br>GitHub README 작성 | jeongliml2002@gmail.com |
+| worker | 심재헌 | 프로젝트 설계<br>주행 구현<br>PPT 제작 | sysbmy905@gmail.com |
+| worker | 황한문 | 비상상황 감지 구현<br>Human Following 구현<br>AI Server 구현<br>GitHub README 작성 | hhm9124@gmail.com |
+| worker | 신동철 | 통신 설계<br>Main Server 구현<br>주행 구현<br>PPT 제작 | lt00104@gmail.com |
 
 
 ---
