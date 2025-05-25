@@ -55,18 +55,87 @@
 
  
 ### 기능 리스트
-| 기능 항목           | 설명 |
-|--------------------|------|
-| **장애물 회피**       | 주행 시 장애물 감지 후 회피 |
-| **순찰**             | 매일 아침/저녁 예약된 시간에 순찰 수행<br>– 인원 확인<br>– 이상 상태 확인 |
-| **위험 상황 판단**    | 주행 중 위험 상황 감지 시 알림<br>– 화재<br>– 쓰러짐 |
-| **대기장소로 복귀**   | 동작 완료 후 대기 및 충전 스테이션으로 복귀 후 도킹 |
-| **호출 응답 주행**    | QR코드 호출 시 해당 장소로 이동<br>– 다용도실<br>– 노인 병실 침대 |
-| **인지 재활 치료**    | 대화 및 산책을 통한 고독감 완화, 심리 안정감 제공<br>– 정해진 코스 산책<br>– 대화 |
-| **건강 이상 체크**    | 손목밴드를 통한 건강 데이터 업데이트<br>– 심박수, 체온<br>– 산소포화도 |
-| **인터페이스**       | 로봇 및 어르신 상태 확인 및 관리<br>– 로봇 현상태 확인<br>– 로봇 호출<br>– 어르신 정보 및 건강 확인 |
+<table>
+  <tr>
+    <th width="30%">기능 항목</th>
+    <th>설명</th>
+  </tr>
+  <tr>
+    <td>장애물 회피</td>
+    <td>주행 시 장애물 감지 후 회피</td>
+  </tr>
+  <tr>
+    <td>순찰</td>
+    <td>
+      매일 아침/저녁 예약된 시간에 순찰 수행
+      <ul>
+        <li>인원 확인</li>
+        <li>이상 상태 확인</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>위험 상황 판단</td>
+    <td>
+      주행 중 위험 상황 감지 시 알림
+      <ul>
+        <li>화재</li>
+        <li>쓰러짐</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>대기장소로 복귀</td>
+    <td>동작 완료 후 대기 및 충전 스테이션으로 복귀 후 도킹</td>
+  </tr>
+  <tr>
+    <td>호출 응답 주행</td>
+    <td>
+      QR코드 호출 시 해당 장소로 이동
+      <ul>
+        <li>다용도실</li>
+        <li>노인 병실 침대</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>인지 재활 치료</td>
+    <td>
+      대화 및 산책을 통한 고독감 완화 및 심리적 안정 제공
+      <ul>
+        <li>정해진 코스 산책</li>
+        <li>대화</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>건강 이상 체크</td>
+    <td>
+      손목 밴드를 통한 건강 상태 업데이트
+      <ul>
+        <li>심박수, 체온</li>
+        <li>산소포화도</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>인터페이스</td>
+    <td>
+      로봇 및 어르신 상태 확인 및 관리
+      <ul>
+        <li>로봇 현황 확인 및 호출</li>
+        <li>어르신 정보 및 건강 상태 확인</li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
 ### 결과 영상
+<table>
+  <tr>
+    
+  </tr>
+</table>
 
 ### 프로젝트 실행
 #### Requirements
@@ -112,8 +181,127 @@ Run the main script:
 
 ## 프로젝트 설계
 ### 시스템 아키텍처
+<table>
+  <tr>
+    <td width="60%">
+      <img src="https://github.com/user-attachments/assets/35fb0dd5-97a6-400d-ae11-ac6dc091f7c3" width="100%">
+    </td>
+    <td width="40%">
+      <ul>
+        <li>하나의 시스템은 총 3대의 컴퓨터, 1대의 로봇, 1개의 유저 디바이스(와치)로 구성</li>
+        <li>통신은 영상은 UDP, 유저 디바이스와 컴퓨터들 간은 TCP, 로봇과의 통신은 ROS 통신으로 구성</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/0310e2f8-edab-454c-be73-dd2b0d43b966" width="100%">
+    </td>
+    <td>
+      UDP 통신
+      <ul>
+        <li>영상 데이터 전달 위한 통신</li>
+        <li>하나의 시스템은 총 3대의 컴퓨터, 1대의 로봇, 1개의 유저 디바이스(와치)로 구성</li>
+        <li>통신은 영상은 UDP, 유저 디바이스와 컴퓨터들 간은 TCP, 로봇과의 통신은 ROS 통신으로 구성</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/f3a01e72-4acc-4e73-93ac-dbfcd94b5c0d" width="100%">
+    </td>
+    <td>
+      TCP 통신
+      <ul>
+        <li>하나의 시스템은 총 3대의 컴퓨터, 1대의 로봇, 1개의 유저 디바이스(와치)로 구성</li>
+        <li>하나의 시스템은 총 3대의 컴퓨터, 1대의 로봇, 1개의 유저 디바이스(와치)로 구성</li>
+        <li>하나의 시스템은 총 3대의 컴퓨터, 1대의 로봇, 1개의 유저 디바이스(와치)로 구성</li>
+        <li>통신은 영상은 UDP, 유저 디바이스와 컴퓨터들 간은 TCP, 로봇과의 통신은 ROS 통신으로 구성</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/72a83d7c-dead-47bd-a760-1ec88fb8856e" width="100%">
+    </td>
+    <td>
+      ROS 통신
+      <ul>
+        <li>제어 명렁 및 로봇 상태 데이터 전달을 위한 통신</li>
+        <li>하나의 시스템은 총 3대의 컴퓨터, 1대의 로봇, 1개의 유저 디바이스(와치)로 구성</li>
+        <li>통신은 영상은 UDP, 유저 디바이스와 컴퓨터들 간은 TCP, 로봇과의 통신은 ROS 통신으로 구성</li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
 ### ER Diagram
+<table>
+  <tr>
+    <td width="60%">
+      <img src="https://github.com/user-attachments/assets/448a2fc5-47d9-4c21-abe7-06e5de91fa3b" width="100%">
+    </td>
+    <td width="40%">
+      <ul>
+        <li>요양원 입주 어르신 정보 관리</li>
+        <li>요양원 정보 관리</li>
+        <li>로봇 상태 정보 관리</li>
+        <li>작업 정보 관리</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/5c43f371-6fe5-403c-b84b-ac44ea6442fb" width="100%">
+    </td>
+    <td>
+      입주한 어르신들 정보 관리 테이블
+      <ul>
+        <li>이름, 생년월일, 성별 등 기본 정보 저장</li>
+        <li>건강 상태 정보 저장</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/d019ff4a-bfcb-4c18-9321-853a00e0feed" width="100%">
+    </td>
+    <td>
+      요양원 정보 관리 테이블
+      <ul>
+        <li>요양원 내부 위치 정보 저장</li>
+        <li>어르신 침대 위치 정보 저장</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/f6d96622-ddf0-432b-8591-28ceefd9bf52" width="100%">
+    </td>
+    <td>
+      로봇 상태 정보 관리 테이블
+      <ul>
+        <li>로봇 기본 정보 저장</li>
+        <li>로봇 상태 정보 저장</li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/3bb7810d-fdfc-4add-b050-4dc23143716b" width="100%">
+    </td>
+    <td>
+      작업 정보 관리 테이블
+      <ul>
+        <li>작업 진행 목록 저장</li>
+        <li>작업 목록 저장</li>
+        <li>작업 스케줄 저장</li>
+        <li>산책 스케줄 저장</li>
+        <li>작업 진행 로그 저장</li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
 <hr>
 
