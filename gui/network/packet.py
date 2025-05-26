@@ -21,14 +21,14 @@ class Packet:
 
         return packet.get_packet()
     
-    def send_resident_info(resident_name, birthday, sex, room_number, bed_number, face):
+    def send_resident_info(resident_name, birthday, sex, room_name, bed_number, face):
         packet = PacketBuilder()
 
         packet.write_opcode(Opcode.SEND_RESIDENT_INFO.value)
         packet.write_string(resident_name)
         packet.write_string(birthday)
         packet.write_char(sex)
-        packet.write_short(room_number)
+        packet.write_string(room_name)
         packet.write_short(bed_number)
         packet.write_image(face)
 
@@ -70,6 +70,14 @@ class Packet:
         packet.write_opcode(Opcode.DELETE_RESIDENT.value)
         packet.write_string(resident_name)
         packet.write_string(birthday)
+
+        return packet.get_packet()
+    
+    def request_bed_list(location):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.BED_LIST.value)
+        packet.write_string(location)
 
         return packet.get_packet()
     
@@ -138,6 +146,13 @@ class Packet:
 
         return packet.get_packet()
     
+    def request_location_list():
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.LOCATION_LIST.value)
+
+        return packet.get_packet()
+    
     def request_walk_schedule():
         packet = PacketBuilder()
 
@@ -169,6 +184,13 @@ class Packet:
         packet.write_opcode(Opcode.GOAL_POSE.value)
         packet.write_float(x)
         packet.write_float(y)
-        packet.write_byte(1)
+        packet.write_byte(2)
+
+        return packet.get_packet()
+    
+    def test():
+        packet = PacketBuilder()
+
+        packet.write_opcode(0x99)
 
         return packet.get_packet()

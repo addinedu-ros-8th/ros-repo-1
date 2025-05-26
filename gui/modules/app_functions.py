@@ -32,7 +32,7 @@ class AppFunctions():
 
         ui = main_window.ui
         # SET MANUAL STYLES
-        ui.map = MapDisplay(ui.label_display, u':/images/images/images/map_2.png')
+        # ui.map = MapDisplay()
         ui.btn_info.clicked.connect(lambda: UIFunctions.click_info(main_window))
         ui.btn_face.clicked.connect(lambda: UIFunctions.click_face(main_window))
         ui.btn_push.clicked.connect(lambda: UIFunctions.click_push(main_window))
@@ -49,3 +49,5 @@ class AppFunctions():
         ui.patrol_cancel_button.clicked.connect(lambda: UIFunctions.click_patrol_cancel(main_window))
         ui.walk_register_button.clicked.connect(lambda: UIFunctions.click_walk_register(main_window))
         ui.walk_cancel_button.clicked.connect(lambda: UIFunctions.click_walk_cancel(main_window))
+        ui.combo_room.currentTextChanged.connect(lambda text: UIFunctions.select_location(main_window, text))
+        ui.combo_room_2.currentTextChanged.connect(lambda text: UIFunctions.select_location(main_window, text))

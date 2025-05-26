@@ -313,6 +313,11 @@ class UIFunctions():
             QMessageBox.warning(parent, "실패", "이름을 입력해주세요.")
             parent.ui.lineEdit_3.setFocus()
             return
+        
+        if parent.ui.combo_room.currentText() == "":
+            QMessageBox.warning(parent, "실패", "호실을 선택해주세요.")
+            return
+
         face = parent.ui.label_2.pixmap()
         if face.isNull():
             QMessageBox.warning(parent, "실패", "사진을 등록해주세요.")
@@ -321,12 +326,11 @@ class UIFunctions():
         name = parent.ui.lineEdit_3.text()
         birthday = parent.ui.date_birth.text()
         sex = 'M' if parent.ui.combo_sex.currentText() == "남성" else 'F'
-        room_number = 101 if parent.ui.combo_room.currentIndex() == 0 \
-            else 102 if parent.ui.combo_room.currentIndex() == 1 else 103
+        room_name = parent.ui.combo_room.currentText()
         bed_number = int(parent.ui.bed_number.text())
         
         parent.socket.sendData(Packet.send_resident_info(
-            name, birthday, sex, room_number, bed_number, face
+            name, birthday, sex, room_name, bed_number, face
         ))
 
     def click_table(parent):
@@ -336,8 +340,8 @@ class UIFunctions():
             return
         
         row = selected_indexes[0].row()
-        name = parent.ui.tbResidentList.item(row, 0).text()
-        birth = parent.ui.tbResidentList.item(row, 2).text()
+        name = parent.ui.tbResidentList.item(row, 1).text()
+        birth = parent.ui.tbResidentList.item(row, 3).text()
 
         parent.socket.sendData(Packet.request_resident_info(name, birth))
 
@@ -371,6 +375,10 @@ class UIFunctions():
 
         parent.socket.sendData(Packet.delete_resident_info(name, birthday))
 
+    def select_location(parent, text):
+        index = parent.ui.stackedWidget_2.currentIndex()
+        parent.socket.sendData(Packet.request_bed_list(text))
+
     def build_robot_list(parent, robots: list[dict]):
         layout = parent.ui.robotListLayout
 
@@ -391,6 +399,7 @@ class UIFunctions():
     def clear_field(parent):
         parent.ui.lineEdit_4.clear()
         parent.ui.combo_sex_2.setCurrentIndex(0)
+        parent.ui.temperature_label.setText("")
         parent.ui.date_birth_2.setDate(QDate.currentDate())
         parent.ui.combo_room_2.setCurrentIndex(0)
         parent.ui.bed_number_2.setValue(1)
@@ -441,11 +450,10 @@ class UIFunctions():
         image = pixmap.toImage()
         color = image.pixelColor(x_real, y_real)
 
-        print(color.name())
-
         if color.name() == "#000000":
             QMessageBox.warning(parent, "경고", "로봇이 이동할 수 없는 위치입니다.")
 
+        # parent.socket.sendData(Packet.send_goal_pose(x_real, y_real))
         parent.socket.sendData(Packet.send_goal_pose(x_real, y_real))
 
         print(f"실제 좌표: ({x_real}, {y_real})")
@@ -517,9 +525,9 @@ class UIFunctions():
         
 
 class MapDisplay:
-    def __init__(self, label: QLabel, map_path: str):
+    def __init__(self, label: QLabel, map_path):
         self.label = label
-        self.original_map = QPixmap(map_path)  # 원본 맵 유지
+        self.original_map = map_path  # 원본 맵 유지
         self.marker_path = u":/icons/images/icons/robot.png"
         self.marker_widgets = []  # QLabel 마커들 저장
         self.set_map()
@@ -552,7 +560,7 @@ class MapDisplay:
         px, py = self.world_to_pixel(x, y, self.map_info)
         yaw = self.quaternion_to_yaw(q_x, q_y, q_z, q_w)
         angle_deg = math.degrees(yaw)
-        rotated = self.rotate_pixmap(pixmap, angle_deg)
+        rotated = self.rotate_pixmap(pixmap, -angle_deg)
 
         marker = QLabel(self.label)
         marker.setPixmap(rotated)
@@ -570,6 +578,11 @@ class MapDisplay:
         self.marker_widgets.clear()
 
     def world_to_pixel(self, wx, wy, map_info, label_width=640, label_height=480):
+        # resolution = 0.05
+        # origin_x = -0.25
+        # origin_y = -0.45
+        # map_w = 55
+        # map_h = 36
         resolution = map_info['resolution']
         origin_x = map_info['origin_x']
         origin_y = map_info['origin_y']

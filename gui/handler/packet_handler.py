@@ -4,6 +4,7 @@ import numpy as np
 from handler.opcode import Opcode
 from network.packet import Packet
 from modules import UIFunctions
+from modules.ui_functions import MapDisplay
 
 from PySide6.QtWidgets import QTableWidgetItem, QMessageBox, QFrame
 from PySide6.QtGui import QImage, QPixmap
@@ -41,13 +42,19 @@ class PacketHandler():
                 
                 for idx in range(count):
                     parent.ui.tbResidentList.insertRow(idx)
+                    id = packet.read_int()
                     name = packet.read_string()
                     birthday = packet.read_string()
                     sex = "남성" if packet.read_char() == 'M' else "여성"
+                    location = packet.read_string()
+                    temperature = f'{packet.read_float():.1f}'
 
-                    parent.ui.tbResidentList.setItem(idx, 0, QTableWidgetItem(name))
-                    parent.ui.tbResidentList.setItem(idx, 1, QTableWidgetItem(sex))
-                    parent.ui.tbResidentList.setItem(idx, 2, QTableWidgetItem(birthday))
+                    parent.ui.tbResidentList.setItem(idx, 0, QTableWidgetItem(str(id)))
+                    parent.ui.tbResidentList.setItem(idx, 1, QTableWidgetItem(name))
+                    parent.ui.tbResidentList.setItem(idx, 2, QTableWidgetItem(sex))
+                    parent.ui.tbResidentList.setItem(idx, 3, QTableWidgetItem(birthday))
+                    parent.ui.tbResidentList.setItem(idx, 4, QTableWidgetItem(location))
+                    parent.ui.tbResidentList.setItem(idx, 5, QTableWidgetItem(temperature))
             elif status == 0xFF:
                 QMessageBox.warning(None, "에러", "입소자 목록 조회에 실패했습니다. 다시 시도해주세요.")
         elif opcode == Opcode.REQUEST_RESIDENT_INFO.value:
@@ -55,8 +62,11 @@ class PacketHandler():
 
             if status == 0x00:
                 name = packet.read_string()
-                birthday = QDate.fromString(packet.read_string(), 'yyyy-MM-dd')
                 sex = packet.read_char()
+                birthday = QDate.fromString(packet.read_string(), 'yyyy-MM-dd')
+                location = packet.read_string()
+                bed_index = packet.read_byte()
+                temperature = packet.read_float()
                 face = packet.read_image()
 
                 parent.ui.label_8.setPixmap(face)
@@ -66,6 +76,9 @@ class PacketHandler():
                 parent.ui.lineEdit_4.setText(name)
                 index = 0 if sex == 'M' else 1
                 parent.ui.combo_sex_2.setCurrentIndex(index)
+                parent.ui.combo_room_2.setCurrentText(location)
+                parent.ui.temperature.setText(f'{round(temperature, 2)}')
+                parent.ui.bed_number_2.setValue(bed_index)
                 parent.ui.date_birth_2.setDate(birthday)
             else:
                 QMessageBox.warning(None, "에러", "입소자 상세조회에 실패했습니다. 다시 시도해주세요.")
@@ -105,6 +118,36 @@ class PacketHandler():
                 for idx in range(size):
                     name = packet.read_string()
                     parent.ui.walk_name_combo.addItem(name)
+            else:
+                QMessageBox.warning(None, "에러", "알 수 없는 에러가 발생했습니다. 다시 시도해주세요.")
+        elif opcode == Opcode.LOCATION_LIST.value:
+            status = packet.read_ubyte()
+
+            if status == 0x00:
+                size = packet.read_short()
+
+                parent.ui.combo_room.clear()
+                parent.ui.combo_room_2.clear()
+                parent.ui.combo_room.blockSignals(True)
+                parent.ui.combo_room_2.blockSignals(True)
+                for idx in range(size):
+                    name = packet.read_string()
+                    parent.ui.combo_room.addItem(name)
+                    parent.ui.combo_room_2.addItem(name)
+
+                parent.ui.combo_room.setCurrentIndex(-1)
+                parent.ui.combo_room_2.setCurrentIndex(-1)
+                parent.ui.combo_room.blockSignals(False)
+                parent.ui.combo_room_2.blockSignals(False)
+            else:
+                QMessageBox.warning(None, "에러", "알 수 없는 에러가 발생했습니다. 다시 시도해주세요.")
+        elif opcode == Opcode.BED_LIST.value:
+            status = packet.read_ubyte()
+
+            if status == 0x00:
+                size = packet.read_short()
+                parent.ui.bed_number.setMinimum(1)
+                parent.ui.bed_number.setMaximum(size)
             else:
                 QMessageBox.warning(None, "에러", "알 수 없는 에러가 발생했습니다. 다시 시도해주세요.")
         elif opcode == Opcode.LOG_CATEGORY.value:
@@ -176,6 +219,9 @@ class PacketHandler():
             size = packet.read_short()
 
             if parent.ui.stackedWidget.currentWidget().objectName() in ["home", "page"]:
+                if not hasattr(parent.ui, "map"):
+                    return
+                
                 parent.ui.map.clear_markers()
                 for idx in range(size):
                     x = packet.read_float()
@@ -186,6 +232,7 @@ class PacketHandler():
                     q_w = packet.read_float()
 
                     parent.ui.map.draw_marker(x, y, q_x, q_y, q_z, q_w, f"누리{idx}호")
+
         elif opcode == Opcode.PATROL_LIST.value:
             status = packet.read_ubyte()
             if status == 0x00:
@@ -266,11 +313,12 @@ class PacketHandler():
             height = int(packet.read_float())
             data = packet.read_bytes()
 
-            parent.ui.map.update_map_info(resolution, origin_x, origin_y, width, height)
 
             np_img = np.frombuffer(data, dtype=np.uint8)
             cv_img = cv2.imdecode(np_img, cv2.IMREAD_GRAYSCALE)
             h, w = cv_img.shape
             qimg = QImage(cv_img.data, w, h, w, QImage.Format_Grayscale8)
             pixmap = QPixmap.fromImage(qimg)
-            parent.ui.label_display.setPixmap(pixmap)
+            parent.ui.map = MapDisplay(parent.ui.label_display, pixmap)
+            parent.ui.map.update_map_info(resolution, origin_x, origin_y, width, height)
+            # parent.ui.label_display.setPixmap(pixmap)

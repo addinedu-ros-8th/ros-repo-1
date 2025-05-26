@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
 
         self.socket = TCPSocket()
         self.socket.receive_data.connect(lambda reader: PacketHandler.handle_packet(self.socket, self, reader))
-        if not self.socket.connectToServer("192.168.0.43", 9999):
+        if not self.socket.connectToServer("192.168.1.103", 9999):
             QMessageBox.warning(self, "에러", "서버에 연결 할 수 없습니다.")
             sys.exit(0)
         else:
@@ -116,9 +116,9 @@ class MainWindow(QMainWindow):
     def checkPassword(self):
         password = widgets.lineEdit_2.text()
         if password == "1234":
-            if len(self.ui.map.map_info) == 0:
-                QMessageBox.warning(self, "에러", "아직 로봇의 준비가 완료되지 않았습니다.\n잠시후 다시 시도해주세요.")
-                return
+            # if len(self.ui.map.map_info) == 0:
+            #     QMessageBox.warning(self, "에러", "아직 로봇의 준비가 완료되지 않았습니다.\n잠시후 다시 시도해주세요.")
+            #     return
             UIFunctions.setComponentEnabled(self, True)
             widgets.lineEdit_2.setText("")
             # widgets.stackedWidget.setCurrentWidget(widgets.home)
@@ -153,8 +153,8 @@ class MainWindow(QMainWindow):
             UIFunctions.resetStyle(self, btnName)
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))
             self.socket.sendData(Packet.request_resident_list())
+            self.socket.sendData(Packet.request_location_list())
             UIFunctions.clear_field(self)
-
         # SHOW NEW PAGE
         if btnName == "btn_logs":
             widgets.stackedWidget.setCurrentWidget(widgets.logs) # SET PAGE
@@ -185,11 +185,7 @@ class MainWindow(QMainWindow):
         self.dragPos = event.globalPosition().toPoint()
 
 if __name__ == "__main__":
-    try:
-        app = QApplication(sys.argv)
-        # app.setWindowIcon(QIcon("icon.ico"))
-        window = MainWindow()
-    except:
-        QMessageBox.critical(None, "에러", "에러가 발생했습니다. 관리자에게 문의 바랍니다.")
-    finally:
-        sys.exit(app.exec())
+    app = QApplication(sys.argv)
+    # app.setWindowIcon(QIcon("icon.ico"))
+    window = MainWindow()
+    sys.exit(app.exec())

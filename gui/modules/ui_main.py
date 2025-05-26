@@ -542,6 +542,14 @@ class Ui_MainWindow(object):
         sex_layout_2.addWidget(self.combo_sex_2)
         self.scrollLayout_2.addLayout(sex_layout_2)
 
+        # 체온
+        temperature_label_layout = QHBoxLayout()
+        temperature_label = QLabel("금일체온 :", parent=self.scrollAreaWidgetContents_2)
+        self.temperature = QLabel("",parent=self.scrollAreaWidgetContents_2)
+        temperature_label_layout.addWidget(temperature_label)
+        temperature_label_layout.addWidget(self.temperature)
+        self.scrollLayout_2.addLayout(temperature_label_layout)
+
         # 생년월일
         birth_layout_2 = QHBoxLayout()
         birth_label_2 = QLabel("생년월일 :", parent=self.scrollAreaWidgetContents_2)
@@ -556,7 +564,6 @@ class Ui_MainWindow(object):
         room_layout_2 = QHBoxLayout()
         room_label_2 = QLabel("호실 :", parent=self.scrollAreaWidgetContents_2)
         self.combo_room_2 = QComboBox(parent=self.scrollAreaWidgetContents_2)
-        self.combo_room_2.addItems(["1호실", "2호실", "3호실"])
         room_layout_2.addWidget(room_label_2)
         room_layout_2.addWidget(self.combo_room_2)
         self.scrollLayout_2.addLayout(room_layout_2)
@@ -634,7 +641,6 @@ class Ui_MainWindow(object):
         room_layout = QHBoxLayout()
         room_label = QLabel("호실 :", parent=self.scrollAreaWidgetContents)
         self.combo_room = QComboBox(parent=self.scrollAreaWidgetContents)
-        self.combo_room.addItems(["1호실", "2호실", "3호실"])
         room_layout.addWidget(room_label)
         room_layout.addWidget(self.combo_room)
         self.scrollLayout.addLayout(room_layout)
@@ -644,7 +650,6 @@ class Ui_MainWindow(object):
         bed_label = QLabel("침대번호 :", parent=self.scrollAreaWidgetContents)
         self.bed_number = QSpinBox(parent=self.scrollAreaWidgetContents)
         self.bed_number.setMinimum(1)
-        self.bed_number.setMaximum(5)
         bed_layout.addWidget(bed_label)
         bed_layout.addWidget(self.bed_number)
         self.scrollLayout.addLayout(bed_layout)
@@ -659,20 +664,13 @@ class Ui_MainWindow(object):
         self.tbResidentList = QTableWidget(parent=self.residents)
         self.tbResidentList.setGeometry(QtCore.QRect(20, 160, 531, 271))
         self.tbResidentList.setObjectName("tbResidentList")
-        self.tbResidentList.setColumnCount(4)
+        self.tbResidentList.setColumnCount(6)
         self.tbResidentList.setRowCount(0)
         self.tbResidentList.verticalHeader().setVisible(False)
         self.tbResidentList.setSelectionBehavior(QTableWidget.SelectionBehavior.SelectRows)
         self.tbResidentList.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         self.tbResidentList.setSelectionMode(QTableWidget.SelectionMode.SingleSelection)
-        item = QTableWidgetItem()
-        self.tbResidentList.setHorizontalHeaderItem(0, item)
-        item = QTableWidgetItem()
-        self.tbResidentList.setHorizontalHeaderItem(1, item)
-        item = QTableWidgetItem()
-        self.tbResidentList.setHorizontalHeaderItem(2, item)
-        item = QTableWidgetItem()
-        self.tbResidentList.setHorizontalHeaderItem(3, item)
+        self.tbResidentList.setHorizontalHeaderLabels(["ID", "이름", "성별", "생년월일", "호실", "체온"])
         self.stackedWidget.addWidget(self.residents)
 
         # 로그 페이지 레이아웃 생성
@@ -961,19 +959,17 @@ class Ui_MainWindow(object):
         self.date_birth_2.setDisplayFormat(QCoreApplication.translate("MainWindow", "yyyy-MM-dd"))
         self.btn_face_2.setText(QCoreApplication.translate("MainWindow", "사진수정"))
         self.btn_discharge.setText(QCoreApplication.translate("MainWindow", "퇴소처리"))
-        item = self.tbResidentList.horizontalHeaderItem(0)
-        item.setText(QCoreApplication.translate("MainWindow", "이름"))
-        item = self.tbResidentList.horizontalHeaderItem(1)
-        item.setText(QCoreApplication.translate("MainWindow", "성별"))
-        item = self.tbResidentList.horizontalHeaderItem(2)
-        item.setText(QCoreApplication.translate("MainWindow", "생년월일"))
-        item = self.tbResidentList.horizontalHeaderItem(3)
-        item.setText(QCoreApplication.translate("MainWindow", "호실"))
         self.label_3.setText(QCoreApplication.translate("MainWindow", "이름 :"))
         self.btn_info.setText(QCoreApplication.translate("MainWindow", "신규등록"))
         self.btn_searchinfo.setText(QCoreApplication.translate("MainWindow", "검색"))
         self.btn_push.setText(QCoreApplication.translate("MainWindow", "등록"))
         self.check_discharge.setText(QCoreApplication.translate("MainWindow", "퇴소자 포함"))
+
+        self.tbResidentList.setColumnWidth(0, 50)   # ID
+        self.tbResidentList.setColumnWidth(1, 100)  # 이름
+        self.tbResidentList.setColumnWidth(2, 60)   # 성별
+        self.tbResidentList.setColumnWidth(3, 120)  # 생년월일
+        self.tbResidentList.setColumnWidth(4, 80)   # 체온
 
         item = self.tableWidget.horizontalHeaderItem(0)
         item.setText(QCoreApplication.translate("MainWindow", "No."))
