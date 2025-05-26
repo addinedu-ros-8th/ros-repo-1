@@ -1,16 +1,18 @@
+import os
 import cv2
 import datetime
+import numpy as np
 
 from std_msgs.msg import String
 from geometry_msgs.msg import PoseStamped
+from ament_index_python.packages import get_package_share_directory
 
 from nuri_system.database.datbase_connection import NuriDatabase
 from nuri_system.handler.opcode import Opcode
 from nuri_system.network.packet.client_packet import ClientPacket
 
 class ClientHandler():
-
-    def handle_packet(handler, reader, node=None):
+    def handle_packet(handler, reader, node, robot_handler):
         opcode = reader.read_byte()
 
         # print(f"[OPCODE] {Opcode(opcode).name}")
@@ -19,11 +21,11 @@ class ClientHandler():
         if opcode == Opcode.CLIENT_HELLO.value:     # Client Register
             ClientHandler.client_hello(handler, reader, node)
         if opcode == Opcode.RESIDENT_LIST.value:
-            ClientHandler.fetch_resident_list(handler, reader)
+            ClientHandler.fetch_resident_list(handler, reader, node)
         elif opcode == Opcode.SEND_RESIDENT_INFO.value:
-            ClientHandler.add_new_resident(handler, reader)
+            ClientHandler.add_new_resident(handler, reader, node)
         elif opcode == Opcode.REQUEST_RESIDENT_INFO.value:
-            ClientHandler.fetch_resident_info(handler, reader)
+            ClientHandler.fetch_resident_info(handler, reader, node)
         elif opcode == Opcode.REQUEST_DISCHARGE.value:
             ClientHandler.discharge_resident(handler, reader)
         elif opcode == Opcode.UPDATE_RESIDENT_INFO.value:
@@ -32,6 +34,10 @@ class ClientHandler():
             ClientHandler.delete_resident_info(handler, reader)
         elif opcode == Opcode.RESIDENT_NAME_LIST.value:
             ClientHandler.fetch_resident_name_list(handler, reader)
+        elif opcode == Opcode.LOCATION_LIST.value:
+            ClientHandler.fetch_location_list(handler, reader, node)
+        elif opcode == Opcode.BED_LIST.value:
+            ClientHandler.fetch_bed_count(handler, reader, node)
         elif opcode == Opcode.RESIDENT_HEALTH_INFO.value:
             ClientHandler.update_health_info(handler, reader, node)
         elif opcode == Opcode.PATROL_LIST.value:
@@ -57,7 +63,11 @@ class ClientHandler():
         elif opcode == Opcode.ROBOT_LIST.value:
             ClientHandler.fetch_robot_list(handler, reader, node)
         elif opcode == Opcode.GOAL_POSE.value:
-            ClientHandler.send_goal_pose(handler, reader, node)
+            ClientHandler.send_goal_pose(handler, reader, robot_handler)
+        elif opcode == Opcode.DISTANCE.value:
+            ClientHandler.distance(handler, reader, node)
+        elif opcode == 0x99:
+            ClientHandler.test(handler, reader, node)
 
     @staticmethod
     def client_hello(handler, reader, node):
@@ -73,13 +83,30 @@ class ClientHandler():
         node.get_logger().info(f"[CONNECTED] type : {type}, {handler.addr}")
 
         handler.send(ClientPacket.send_hello())
-        # img = cv2.imread('map.jpg')
-        # _, img_bytes = cv2.imencode('.jpg', img)
-        handler.send(ClientPacket.send_map(handler.robot_handler.map_info, handler.robot_handler.map_jpg))
+        if type == "client":
+            map_path = os.path.join(get_package_share_directory('nuri_system'), 'config', 'map_info.npz')
+            loaded = np.load(map_path)
+            grid = loaded['grid']                       # shape: (height, width)[0]
+            origin = loaded['origin_position']
+            map_info = {
+                'resolution' : loaded['resolution'].item(),
+                'origin_x' : origin[0],
+                'origin_y' : origin[1],
+                'width' : float(grid.shape[1]),
+                'height' : float(grid.shape[0])
+            }
+
+            img = np.zeros((int(map_info['height']), int(map_info['width'])), dtype=np.uint8).copy()
+            img[grid == 0] = 255
+            img[grid == 100] = 0
+            img[grid == -1] = 205
+            img = np.fliplr(img)
+            _, img = cv2.imencode('.jpg', img)
+            handler.send(ClientPacket.send_map(map_info, img, node))
 
     @staticmethod
-    def fetch_resident_list(handler, reader):
-        conn = NuriDatabase.get_instance()
+    def fetch_resident_list(handler, reader, node):
+        conn = NuriDatabase()
 
         status = 0x00
 
@@ -89,29 +116,39 @@ class ClientHandler():
         params = ()
 
         try:
-            query = "SELECT name, birthday, sex FROM residents"
+            query = """
+            SELECT r.id, r.name, r.birthday, r.sex, l.name, ROUND(AVG(h.temperature), 2) AS avg_temperature 
+            FROM residents r, health_info h, location l, bed b
+            WHERE h.user_id = r.id
+            AND b.id = r.bed_id
+            AND b.location_id = l.id
+            """
             if name != "":
-                query += " WHERE name like %s"
+                query += " AND r.name like %s"
                 params = (f"%{name}%",)
 
             if not check:
-                join = " WHERE" if name == "" else " AND"
+                join = " AND " if name == "" else " AND"
                 query += join + " discharge_date is null"
 
+            query += " GROUP BY r.id"
+
             result = conn.fetch_all(query, params)
-        except:
+        except Exception as e:
             status = 0xFF
+            node.get_logger().info(f'{e}')
+
 
         handler.send(ClientPacket.send_resident_list(status, result))
 
     @staticmethod
-    def add_new_resident(handler, reader):
-        conn = NuriDatabase.get_instance()
+    def add_new_resident(handler, reader, node):
+        conn = NuriDatabase()
         name = reader.read_string()
         birthday = reader.read_string()
         sex = reader.read_char()
-        room_number = reader.read_int()
-        bed_number = reader.read_int()
+        room_name = reader.read_string()
+        bed_number = reader.read_short()
         face = reader.read_image()
 
         status = 0x00
@@ -123,11 +160,13 @@ class ClientHandler():
             if result:
                 status = 0x01
             else:
-                query = "INSERT INTO residents(name, birthday, sex) values(%s, %s, %s)"
-                user_id = conn.execute_query(query, (name, birthday, sex))
+                query = "INSERT INTO residents(name, birthday, sex, bed_id) values(%s, %s, %s, (SELECT b.id FROM bed b, location l WHERE l.name = %s AND l.id = b.location_id AND b.bed_index = %s))"
+                resident_id = conn.execute_query(query, (name, birthday, sex, room_name, bed_number))
 
-                query = "INSERT INTO faces(user_id, face_image) values(%s, %s)"
-                conn.execute_query(query, (user_id, face))
+                query = "INSERT INTO faces(resident_id, face_image) values(%s, %s)"
+                conn.execute_query(query, (resident_id, face))
+
+                conn.commit()
         except Exception as e:
             status = 0xFF
             conn.rollback()
@@ -135,8 +174,8 @@ class ClientHandler():
         handler.send(ClientPacket.send_resident_info_result(status))
 
     @staticmethod
-    def fetch_resident_info(handler, reader):
-        conn = NuriDatabase.get_instance()
+    def fetch_resident_info(handler, reader, node):
+        conn = NuriDatabase()
 
         name = reader.read_string()
         birthday = reader.read_string()
@@ -146,20 +185,26 @@ class ClientHandler():
 
         try:
             query = """
-                    SELECT r.name, r.sex, r.birthday, f.face_image
-                    FROM residents r, faces f
-                    WHERE r.name = %s and r.birthday = %s and r.id = f.resident_id
+                    SELECT r.name, r.sex, r.birthday, l.name, b.bed_index, ROUND(AVG(h.temperature), 2) AS avg_temperature, f.face_image
+                    FROM residents r, faces f, location l, bed b, health_info h
+                    WHERE r.name = %s 
+                    AND r.birthday = %s 
+                    AND r.id = f.resident_id
+                    AND l.id = b.location_id
+                    AND r.bed_id = b.id AND r.id = h.user_id
+                    AND DATE(h.created_at) = CURDATE()
                     """
             result = conn.fetch_one(query, (name, birthday))
 
         except Exception as e:
             status = 0xFF
+            node.get_logger().info(f'{e}')
 
         handler.send(ClientPacket.send_resident_info(status, result))
 
     @staticmethod
     def discharge_resident(handler, reader):
-        conn = NuriDatabase.get_instance()
+        conn = NuriDatabase()
         name = reader.read_string()
         birthday = reader.read_string()
         date = datetime.datetime.now()
@@ -177,7 +222,7 @@ class ClientHandler():
 
     @staticmethod
     def update_resident_info(handler, reader):
-        conn = NuriDatabase.get_instance()
+        conn = NuriDatabase()
         name = reader.read_string()
         birthday = reader.read_string()
         sex = reader.read_char()
@@ -197,7 +242,7 @@ class ClientHandler():
 
     @staticmethod
     def delete_resident_info(handler, reader):
-        conn = NuriDatabase.get_instance()
+        conn = NuriDatabase()
         name = reader.read_string()
         birthday = reader.read_string()
 
@@ -214,7 +259,7 @@ class ClientHandler():
 
     @staticmethod
     def fetch_resident_name_list(handler, reader):
-        conn = NuriDatabase.get_instance()
+        conn = NuriDatabase()
 
         status = 0x00
         result = None
@@ -228,20 +273,53 @@ class ClientHandler():
         handler.send(ClientPacket.send_resident_name_list(status, result))
 
     @staticmethod
+    def fetch_location_list(handler, reader, node):
+        conn = NuriDatabase()
+
+        status = 0x00
+        result = None
+
+        try:
+            query = "SELECT name FROM location l"
+            result = conn.fetch_all(query)
+        except:
+            status = 0xFF
+
+        handler.send(ClientPacket.send_location_list(status, result))
+
+    @staticmethod
+    def fetch_bed_count(handler, reader, node):
+        conn = NuriDatabase()
+        location = reader.read_string()
+
+        status = 0x00
+        result = None
+
+        try:
+            query = "SELECT count(*) FROM location l, bed b WHERE l.id = b.location_id AND l.name = %s"
+            result = conn.fetch_one(query, (location,))
+        except Exception as e:
+            status = 0xFF
+
+        handler.send(ClientPacket.send_bed_count(status, result))
+
+    @staticmethod
     def update_health_info(handler, reader, node):
-        conn = NuriDatabase.get_instance()
+        conn = NuriDatabase()
         resident_id = reader.read_byte()
         heart_rate = reader.read_int()
         oxygen = reader.read_int()
         temperature = reader.read_float()
 
-        # node.get_logger().info(f"{resident_id} {heart_rate} {oxygen} {temperature}")
-
-        # handler.send(ClientPacket.test2(200))
+        try:
+            query = "INSERT INTO health_info(user_id, heart_rate, oxygen, temperature) VALUES(%s, %s, %s, %s)"
+            conn.execute_query(query, (resident_id, heart_rate, oxygen, temperature))
+        except:
+            conn.rollback()
 
     @staticmethod
     def fetch_log_category(handler, reader, node):
-        conn = NuriDatabase.get_instance()
+        conn = NuriDatabase()
 
         status = 0x00
 
@@ -261,7 +339,7 @@ class ClientHandler():
 
     @staticmethod
     def fetch_log_list(handler, reader, node):
-        conn = NuriDatabase.get_instance()
+        conn = NuriDatabase()
         start = reader.read_string()
         end = reader.read_string()
         event_type = reader.read_string()
@@ -299,25 +377,23 @@ class ClientHandler():
 
     @staticmethod
     def detection(handler, reader, node):
-        conn = NuriDatabase.get_instance()
+        conn = NuriDatabase()
 
         robot_id = reader.read_byte()
         type = reader.read_string()
 
-        # node.get_logger().info(handler.robot_handler.robot_manager.get_robot(robot_id).status)
-
-        handler.robot_handler.robot_manager.update_robot(robot_id, "비상상황")
+        node.get_logger().info(f'{type}')
 
         packet = ClientPacket.send_detection(robot_id, type)
 
         handler.client_manager.broadcast(packet)
 
-        robots = node.robot_manager.get_all_robots()
-        handler.client_manager.broadcast(ClientPacket.send_robot_list(robots))
+        # robots = handler.robot_handler.robot_manager.get_all_robots()
+        # handler.client_manager.broadcast(ClientPacket.send_robot_list(robots))
 
     @staticmethod
     def fetch_robot_list(handler, reader, node):
-        robots = node.robot_manager.get_all_robots()
+        robots = handler.robot_handler.robot_manager.get_all_robots()
 
         handler.send(ClientPacket.send_robot_list(robots))
 
@@ -326,14 +402,16 @@ class ClientHandler():
         addr = reader.read_string()
         robot_id = reader.read_byte()
 
-        pub = node.create_publisher(String, 'emergency_msg', 10)
+        pub = node.create_publisher(String, f'/robot{robot_id}/emergency_msg', 10)
         msg = String()
         msg.data = addr
         pub.publish(msg)
 
+        print(msg, flush=True)
+
     @staticmethod
     def fetch_patrol_schedule(handler, reader, node):
-        conn = NuriDatabase.get_instance()
+        conn = NuriDatabase()
 
         status = 0x00
         result = None
@@ -348,7 +426,7 @@ class ClientHandler():
 
     @staticmethod
     def regist_patrol(handler, reader, node):
-        conn = NuriDatabase.get_instance()
+        conn = NuriDatabase()
         time = reader.read_string()
 
         status = 0x00
@@ -365,7 +443,7 @@ class ClientHandler():
 
     @staticmethod
     def unregist_patrol(handler, reader, node):
-        conn = NuriDatabase.get_instance()
+        conn = NuriDatabase()
         time = reader.read_string()
 
         status = 0x00
@@ -383,7 +461,7 @@ class ClientHandler():
 
     @staticmethod
     def fetch_walk_schedule(handler, reader, node):
-        conn = NuriDatabase.get_instance()
+        conn = NuriDatabase()
 
         status = 0x00
         result = None
@@ -405,7 +483,7 @@ class ClientHandler():
 
     @staticmethod
     def regist_walk(handler, reader, node):
-        conn = NuriDatabase.get_instance()
+        conn = NuriDatabase()
         name = reader.read_string()
         time = reader.read_string()
 
@@ -427,7 +505,7 @@ class ClientHandler():
 
     @staticmethod
     def unregist_walk(handler, reader, node):
-        conn = NuriDatabase.get_instance()
+        conn = NuriDatabase()
         name = reader.read_string()
         time = reader.read_string()
 
@@ -455,17 +533,31 @@ class ClientHandler():
         handler.robot_handler.update_schedule_time()
 
     @staticmethod
-    def send_goal_pose(handler, reader, node):
+    def send_goal_pose(handler, reader, robot_handler):
         goal_x = reader.read_float()
         goal_y = reader.read_float()
         robot_id = reader.read_byte()
 
-        pub = node.create_publisher(PoseStamped, f'/robot{robot_id}/goal_pose', 10)
-        goal_pose = PoseStamped()
-        goal_pose.header.frame_id = 'map'
-        goal_pose.pose.position.x = goal_x
-        goal_pose.pose.position.y = goal_y
+        # robot_handler.task_manager.send_goal_pose(robot_id, goal_x, goal_y)
 
-        pub.publish(goal_pose)
+    @staticmethod
+    def distance(handler, reader, node):
+        robot_id = reader.read_byte()
+        distance = reader.read_string()
+        
+        pub = node.create_publisher(String, f'/robot{robot_id}/report_closefar', 10)
+        msg = String()
+        msg.data = distance
+        pub.publish(msg)
 
-        node.get_logger().info(f'{robot_id} {goal_x} {goal_y}')
+        node.get_logger().info(f'{robot_id} {distance}')
+
+    @staticmethod
+    def test(handler, reader, node):
+        # client_manager = SocketHandler.client_manager
+        # client_manager.broadcast(ClientPacket.test(), "server")
+
+        pub = node.create_publisher(String, '/arrive', 10)
+        msg = String()
+        msg.data = "황한문"
+        pub.publish(msg)

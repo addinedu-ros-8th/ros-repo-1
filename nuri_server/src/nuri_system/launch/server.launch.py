@@ -31,6 +31,24 @@ def generate_launch_description():
         )
     ]
 
+    node.append(
+        Node(
+            package='nuri_system',
+            executable='call',
+            name='call',
+            output='screen'
+        )
+    )
+
+    node.append(
+        Node(
+            package='nuri_system',
+            executable='test',
+            name='test',
+            output='screen'
+        )
+    )
+    
     for domain in robot_domains:
         path = os.path.join(config_dir, 'config', f'bridge_{domain}.yaml')
         node.append(
@@ -59,6 +77,10 @@ def generate_bridge_yaml(domain_id, server_id, output_path):
             'type': 'nav_msgs/msg/OccupancyGrid',
             'remap': f'/robot{domain_id}/map'
         },
+        'cmd_vel': {
+            'type': 'geometry_msgs/msg/Twist',
+            'remap': f'/robot{domain_id}/cmd_vel'
+        },
 
         # 서버 -> 로봇
         f'/robot{domain_id}/emergency_msg': {
@@ -79,17 +101,35 @@ def generate_bridge_yaml(domain_id, server_id, output_path):
             'type': 'nuri_msgs/msg/NuriBotSchedule',
             'remap': '/schedule'
         },
+        f'/robot{domain_id}/task': {
+            'from_domain': server_id,
+            'to_domain': domain_id,
+            'type': 'nuri_msgs/msg/NuriBotTask',
+            'remap': '/task'
+        },
         f'/robot{domain_id}/patrol': {
             'from_domain': server_id,
             'to_domain': domain_id,
             'type': 'std_msgs/msg/Bool',
             'remap': '/patrol'
         },
-        f'/robot{domain_id}/goal_pose': {
+        f'/robot{domain_id}/goalpose': {
             'from_domain': server_id,
             'to_domain': domain_id,
-            'type': 'geometry_msgs/msg/PoseStamped',
-            'remap': '/goal_pose'
+            'type': 'nuri_msgs/msg/NuriBotTask',
+            'remap': '/goalpose'
+        },
+        f'/robot{domain_id}/initial_pose': {
+            'from_domain': server_id,
+            'to_domain': domain_id,
+            'type': 'geometry_msgs/msg/PoseWithCovarianceStamped',
+            'remap': '/initial_pose'
+        },
+        f'/robot{domain_id}/report_closefar': {
+            'from_domain': server_id,
+            'to_domain': domain_id,
+            'type': 'std_msgs/msg/String',
+            'remap': '/report_closefar'
         }
     }
 

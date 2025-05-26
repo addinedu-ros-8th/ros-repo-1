@@ -11,7 +11,6 @@ class SocketHandler(threading.Thread):
     def __init__(self, conn, addr, ros_node=None, robot_handler=None):
         super().__init__()
         self.conn = conn
-        # self.conn.settimeout(1.0)
         self.addr = addr
         self.ros_node = ros_node
         self.robot_handler = robot_handler
@@ -26,7 +25,7 @@ class SocketHandler(threading.Thread):
                     payload_data = self.recv_exact(packet_length)
                     
                     reader = PacketReader(payload_data)
-                    ClientHandler.handle_packet(self, reader, self.ros_node)
+                    ClientHandler.handle_packet(self, reader, self.ros_node, self.robot_handler)
                 except ConnectionError as e:
                     self.ros_node.get_logger().info(f"[DISCONNECTED] {self.addr}")
                     break

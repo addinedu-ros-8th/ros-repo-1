@@ -1,73 +1,75 @@
-# db.py
+import os
 import mysql.connector
-from threading import Lock
+import configparser
+
+from mysql.connector import pooling
+from ament_index_python.packages import get_package_share_directory
 
 class NuriDatabase:
-    _instance = None
-    _lock = Lock()
+    def __init__(self):
+        config_path = os.path.join(
+            get_package_share_directory('nuri_system'),
+            'config',
+            'config.ini'
+        )
+        config = configparser.ConfigParser()
+        config.read(config_path)
 
-    def __init__(self, host, user, password, database):
-        try:
-            self.conn = mysql.connector.connect(
-                host=host,
-                user=user,
-                password=password,
-                database=database,
-                autocommit=True
-            )
-            print("[SUCCESS] Databse initialized")
-        except:
-            print("[ERROR] Failed to connect to the database")
+        db_config = {
+            'host': config['database']['host'],
+            'user': config['database']['user'],
+            'password': config['database']['password'],
+            'database': config['database']['database']
+        }
 
-    @classmethod
-    def initialize(cls, host, user, password, database):
-        with cls._lock:
-            if cls._instance is None or not cls._instance.conn.is_connected():
-                cls._instance = cls(host, user, password, database)
+        self.pool = mysql.connector.pooling.MySQLConnectionPool(
+            pool_name="nuri_pool",
+            pool_size=5,
+            pool_reset_session=True,
+            **db_config
+        )
 
-    @classmethod
-    def get_instance(cls):
-        if cls._instance is None:
-            raise Exception("Database not initialized. Call initialize() first.")
-        return cls._instance
-
-    # 이하 동일
     def execute_query(self, query, param=None):
-        cursor = self.conn.cursor()
-        cursor.execute(query, param)
-        last_id = cursor.lastrowid
-        cursor.close()
-        return last_id
-
-    def execute_many(self, query, param=None):
-        cursor = self.conn.cursor(prepared=True)
-        cursor.executemany(query, param)
-        cursor.close()
-        return True
-
-    def fetch_all(self, query, params=None):
-        cursor = self.conn.cursor(buffered=True)
+        conn = self.pool.get_connection()
+        cursor = conn.cursor()
         try:
-            cursor.execute(query, params)
-            return cursor.fetchall()
+            cursor.execute(query, param)
+            conn.commit()
+            return cursor.lastrowid
+        except Exception as e:
+            print(f"[DB ERROR] execute_query failed: {e}")
+            conn.rollback()
+            self.execute_query(query, param)
         finally:
             cursor.close()
+            conn.close()
 
-    def fetch_one(self, query, params=None):
-        cursor = self.conn.cursor(buffered=True)
+
+    def fetch_one(self, query, param=None):
+        conn = self.pool.get_connection()
+        cursor = conn.cursor(dictionary=False)
         try:
-            cursor.execute(query, params)
+            cursor.execute(query, param)
             return cursor.fetchone()
+        except Exception as e:
+            print(f"[DB ERROR] execute_query_fetchone failed: {e}")
+            self.fetch_one(query, param)
+            return None
         finally:
             cursor.close()
+            conn.close()
 
-    def commit(self):
-        self.conn.commit()
+    def fetch_all(self, query, param=None):
+        conn = self.pool.get_connection()
+        cursor = conn.cursor(dictionary=False)
+        try:
+            cursor.execute(query, param)
+            return cursor.fetchall()
+        except Exception as e:
+            print(f"[DB ERROR] execute_query_fetchall failed: {e}")
+            self.fetch_all(query, param)
+            return None
+        finally:
+            cursor.close()
+            conn.close()
 
-    def rollback(self):
-        self.conn.rollback()
-
-    def dispose(self):
-        if self.conn.is_connected():
-            self.conn.close()
-            print("disconnect db...")

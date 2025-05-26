@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>누리봇 호출 페이지</title>
+  <script>
+    window.onload = function () {
+      const id = "{{ id }}";
+      const confirmed = confirm(`현재 위치로 누리봇을 호출하시겠습니까?`);
+      if (confirmed) {
+        fetch("/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: id })
+        }).then(response => {
+          if (response.ok) alert("누리봇 호출이 완료되었습니다.");
+          else alert("호출 실패");
+        });
+      }
+    };
+  </script>
+</head>
+<body></body>
+</html>

@@ -9,6 +9,8 @@ class Opcode(Enum):
     UPDATE_RESIDENT_INFO = 0x05
     DELETE_RESIDENT = 0x06
     RESIDENT_NAME_LIST = 0x07
+    LOCATION_LIST = 0x08
+    BED_LIST = 0x09
 
     RESIDENT_HEALTH_INFO = 0x10
 
@@ -25,6 +27,7 @@ class Opcode(Enum):
     
     DETECTION = 0x30
     REQUEST_VIDEO = 0x31
+    DISTANCE = 0x32
 
     ROBOT_LIST = 0x40
     ROBOT_LOCATION = 0x41

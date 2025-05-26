@@ -20,9 +20,12 @@ class ClientPacket:
         if status == 0x00:
             packet.write_short(len(result))
             for row in result:
-                packet.write_string(row[0])
-                packet.write_string(row[1].strftime('%Y-%m-%d'))
-                packet.write_char(row[2])
+                packet.write_int(row[0])
+                packet.write_string(row[1])
+                packet.write_string(row[2].strftime('%Y-%m-%d'))
+                packet.write_char(row[3])
+                packet.write_string(row[4])
+                packet.write_float(row[5])
 
         return packet.get_packet()
     
@@ -40,10 +43,13 @@ class ClientPacket:
         packet.write_opcode(Opcode.REQUEST_RESIDENT_INFO.value)
         packet.write_ubyte(status)
         if status == 0x00:
-            packet.write_string(result[0])
-            packet.write_string(result[2].strftime('%Y-%m-%d'))
-            packet.write_char(result[1])
-            packet.write_bytes(result[3])   # Images
+            packet.write_string(result[0])                      # 이름
+            packet.write_char(result[1])                        # 성별
+            packet.write_string(result[2].strftime('%Y-%m-%d')) # 생년월일
+            packet.write_string(result[3])                      # 호실
+            packet.write_byte(result[4])                        # 침대 번호
+            packet.write_float(result[5])                       # 체온
+            packet.write_bytes(result[6])                       # 사진
 
         return packet.get_packet()
     
@@ -134,12 +140,12 @@ class ClientPacket:
         packet.write_opcode(Opcode.ROBOT_LOCATION.value)
         packet.write_short(len(robots))
         for robot in robots:
-            packet.write_float(robot.x)
-            packet.write_float(robot.y)
-            packet.write_float(robot.q_x)
-            packet.write_float(robot.q_y)
-            packet.write_float(robot.q_z)
-            packet.write_float(robot.q_w)
+            packet.write_float(robot.position.x)
+            packet.write_float(robot.position.y)
+            packet.write_float(robot.orientation.x)
+            packet.write_float(robot.orientation.y)
+            packet.write_float(robot.orientation.z)
+            packet.write_float(robot.orientation.w)
 
         return packet.get_packet()
     
@@ -192,6 +198,30 @@ class ClientPacket:
 
         return packet.get_packet()
     
+    def send_location_list(status, result):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.LOCATION_LIST.value)
+        packet.write_ubyte(status)
+
+        if status == 0x00:
+            packet.write_short(len(result))
+            for name in result:
+                packet.write_string(name[0])
+
+        return packet.get_packet()
+    
+    def send_bed_count(status, result):
+        packet = PacketBuilder()
+
+        packet.write_opcode(Opcode.BED_LIST.value)
+        packet.write_ubyte(status)
+
+        if status == 0x00:
+            packet.write_short(result[0])
+
+        return packet.get_packet()
+    
     def regist_walk_result(status):
         packet = PacketBuilder()
 
@@ -223,6 +253,16 @@ class ClientPacket:
 
         return packet.get_packet()
     
+    def test():
+        packet = PacketBuilder()
+
+        packet.write_opcode(0x99)
+        packet.write_float(0.5)
+        packet.write_float(0.5)
+        packet.write_string("황한문")
+
+        return packet.get_packet()
+    
     def test2(status):
         packet = PacketBuilder()
 
@@ -231,7 +271,7 @@ class ClientPacket:
 
         return packet.get_packet()
 
-    def send_map(map_info, img):
+    def send_map(map_info, img, node):
         packet = PacketBuilder()
 
         packet.write_opcode(Opcode.MAP.value)
