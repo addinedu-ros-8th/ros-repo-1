@@ -216,20 +216,77 @@ Run the main script:
 
 ## 기능 및 기술 설명
 #### 전체 시나리오
+<table>
+  <tr>
+    <td width="60%">
+      <img src="https://github.com/user-attachments/assets/91162e40-9b58-4758-93c8-e78ef28cc23c" width=100%" />
+    </td>
+    <td>
+      로봇의 전체 시나리오 State Diagram
+      <ul>
+        <li>노란색 박스 상태 : 명령을 받을 수 있는 상태
+          <ul>
+            <li>나머지 파란색 박스 상태는 작업 수행중이라 판단하여 명령 받을 수 없음</li>
+          </ul>
+        </li>
+        <li>진한 태두리가 표시되어 있는 상태 : 복합 상태
+          <ul>
+            <li>기본 주행 시나리오</li>
+            <li>주행 시 장애물 회피 등의 상태 변경이 있음</li>
+          </ul>
+        </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/a67f2bbf-c161-4730-b205-e0eb8d9ad8f5" width="100%" />
+    </td>
+    <td>
+      로봇 State 기반 간단 시나리오
+      <ul>
+        <li>상태 다이어그램을 기반으로 중요 시나리오만 표현한 간단한 다이어그램</li>
+        <li>시나리오 설명을 위한 간단한 다이어그램</li>
+        <li>충전을 하는 중에 배터리 상태에 따라 충전/대기 상태 변환
+          <ul>
+            <li>충전 : 충전 스테이션에서 충전 진행 중이며 다음 명령을 받을 수 없는 상태</li>
+            <li>대기 : 충전 스테이션에서 충전 진행 중이나 다음 명령을 받을 수 있는 상태</li>
+          </ul>
+        </li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
-#### 기본 주행
+#### 복합 상태 동작 시나리오
+<table>
+  <tr>
+    <td width="60%">
+      <img src="https://github.com/user-attachments/assets/a5b4ee7c-f36d-47c2-be31-83255abd8111" width="100%" />
+    </td>
+    <td>
+      기본 주행 동작 시나리오 시퀀스 다이어그램
+      <ul>
+        <li></li>
+      </ul>
+    </td>
+  </tr>
+</table>
 
-#### 순찰
+###### 순찰
 
-#### 호출
 
-#### 위험 상황 감지
+###### 호출
 
-#### 산책
 
-#### 대화
+###### 산책
 
-#### 건강 상태 모니터링
+
+###### 대화
+
+
+###### 건강 상태 모니터링
+
 
 <hr>
 
