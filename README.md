@@ -386,7 +386,9 @@ Run the main script:
     </td>
   </tr>
 </table>
-<h5></h5>
+<h5>OLED</h5>
+<h5>MAX30105</h5>
+<h5>MLX90614</h5>
 
 <hr>
 
