@@ -173,19 +173,14 @@
 
 #### 프로젝트 실행
 ###### Requirements
-<table>
-  <tr>
-    <td width="60%">
-      <img src="https://github.com/user-attachments/assets/cba18e75-6183-4275-9e25-5836891e04e6" width="100%">
-    </td>
-    <td width="40%">
-      <ul>
-        <li>ROS2(Jazzy): <a href="https://docs.ros.org/en/jazzy/index.html">https://docs.ros.org/en/jazzy/index.html</a></li>
-        <li>Robot Courtesy by <a href="https://pinklab.art/?page_id=5849">PINKLAB</a></li>
-      </ul>
-    </td>
-  </tr>
-</table>
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/cba18e75-6183-4275-9e25-5836891e04e6" width="500" />
+</div>
+<ul>
+  <li>ROS2(Jazzy): <a href="https://docs.ros.org/en/jazzy/index.html">https://docs.ros.org/en/jazzy/index.html</a></li>
+  <li>Robot Courtesy by <a href="https://pinklab.art/?page_id=5849">PINKLAB</a></li>
+</ul>
+      
 
 ###### Installation
 1. Create Python env:
@@ -218,11 +213,26 @@ Run the main script:
 #### 전체 시나리오
 <table>
   <tr>
-    <td width="60%">
-      <img src="https://github.com/user-attachments/assets/91162e40-9b58-4758-93c8-e78ef28cc23c" width=100%" />
+    <td width="60%" rowspan="2">
+      <img src="https://github.com/user-attachments/assets/a67f2bbf-c161-4730-b205-e0eb8d9ad8f5" width="100%" />
     </td>
     <td>
-      로봇의 전체 시나리오 State Diagram
+      <ul>
+        <li>상태 다이어그램을 기반으로 중요 시나리오만 표현한 간단한 다이어그램</li>
+        <li>시나리오 설명을 위한 간단한 다이어그램</li>
+        <li>충전을 하는 중에 배터리 상태에 따라 충전/대기 상태 변환
+          <ul>
+            <li>충전 : 충전 스테이션에서 충전 진행 중이며 다음 명령을 받을 수 없는 상태</li>
+            <li>대기 : 충전 스테이션에서 충전 진행 중이나 다음 명령을 받을 수 있는 상태</li>
+          </ul>
+        </li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/91162e40-9b58-4758-93c8-e78ef28cc23c" width=100%" />
+      <h4>로봇의 전체 시나리오 State Diagram</h4>
       <ul>
         <li>노란색 박스 상태 : 명령을 받을 수 있는 상태
           <ul>
@@ -238,62 +248,152 @@ Run the main script:
       </ul>
     </td>
   </tr>
-  <tr>
-    <td>
-      <img src="https://github.com/user-attachments/assets/a67f2bbf-c161-4730-b205-e0eb8d9ad8f5" width="100%" />
-    </td>
-    <td>
-      로봇 State 기반 간단 시나리오
-      <ul>
-        <li>상태 다이어그램을 기반으로 중요 시나리오만 표현한 간단한 다이어그램</li>
-        <li>시나리오 설명을 위한 간단한 다이어그램</li>
-        <li>충전을 하는 중에 배터리 상태에 따라 충전/대기 상태 변환
-          <ul>
-            <li>충전 : 충전 스테이션에서 충전 진행 중이며 다음 명령을 받을 수 없는 상태</li>
-            <li>대기 : 충전 스테이션에서 충전 진행 중이나 다음 명령을 받을 수 있는 상태</li>
-          </ul>
-        </li>
-      </ul>
-    </td>
-  </tr>
 </table>
 
 #### 복합 상태 동작 시나리오
 <table>
   <tr>
+    <td colspan="2" align="center">
+      <h4>기본 주행</h4>
+    </td>
+  </tr>
+  
+  <tr>
     <td width="60%">
-      <img src="https://github.com/user-attachments/assets/a5b4ee7c-f36d-47c2-be31-83255abd8111" width="100%" />
+      <img src="https://github.com/user-attachments/assets/0e9d1402-5ec5-4922-84d8-1bb181895a3b" width="100%" />
     </td>
     <td>
-      기본 주행 동작 시나리오 시퀀스 다이어그램
       <ul>
         <li></li>
       </ul>
     </td>
   </tr>
 </table>
+<h5>Domain Bridge</h5>
+<h5>SLAM&Navigation</h5>
+<h5>ArUco Marker</h5>
 
-###### 순찰
+<table>
+  <tr>
+    <td colspan="3" align="center">
+      <h4>순찰</h4>
+    </td>
+  </tr>
+  <tr>
+    <td width="40%" rowspan="2">
+      <img src="https://github.com/user-attachments/assets/ee81e78f-f006-4bbf-972c-cc0b064256e7" width="100%" />
+    </td>
+    <td width="20%" rowspan="2">
+      <ul>
+        <li></li>
+      </ul>
+    </td>
+    <td width="40%">
+      <img src="https://github.com/user-attachments/assets/3ad9e6fa-a297-4f33-993e-0c5191e5ec65" width="100%" />
+      <ul>
+        <li></li>
+      </ul>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="https://github.com/user-attachments/assets/b945e7ae-e366-45cb-b65e-2b56ba349cf2" width"100%" />
+      <ul>
+        <li></li>
+      </ul>
+    </td>
+  </tr>
+</table>
+<h5>Object Detection</h5>
+<h5>Pose Estimation</h5>
+<h5>BLE DeviceName, MAC Address 사용한 인원 확인</h5>
 
+<table>
+  <tr>
+    <td colspan="2" align="center">
+      <h4>호출</h4>
+    </td>
+  </tr>
+  <tr>
+    <td width="60%">
+      <img src="https://github.com/user-attachments/assets/03d88f87-8348-4098-af63-9fa7e5a785ff" width=100%" />
+    </td>
+    <td width="40%">
+      <ul>
+        <li></li>
+      </ul>
+    </td>
+  </tr>
+</table>
+<h5>QR code</h5>
+<h5>Call</h5>
 
-###### 호출
+<table>
+  <tr>
+    <td colspan="2" align="center">
+      <h4>산책</h4>
+    </td>
+  </tr>
+  <tr>
+    <td width="60%">
+      <img src="https://github.com/user-attachments/assets/ddcf1ea9-1d75-4dae-958d-79f7cd729c50" width=100%" />
+    </td>
+    <td width="40%">
+      <ul>
+        <li></li>
+      </ul>
+    </td>
+  </tr>
+</table>
+<h5>ReID</h5>
+<h5>Depth Estimation</h5>
 
+<table>
+  <tr>
+    <td colspan="2" align="center">
+      <h4>대화</h4>
+    </td>
+  </tr>
+  <tr>
+    <td width="60%">
+      <img src="https://github.com/user-attachments/assets/0e7516fb-a4b7-4321-ac0f-71b97e78d7d5" width=100%" />
+    </td>
+    <td width="40%">
+      <ul>
+        <li></li>
+      </ul>
+    </td>
+  </tr>
+</table>
+<h5>STT</h5>
+<h5>LLM</h5>
+<h5>TTS</h5>
 
-###### 산책
-
-
-###### 대화
-
-
-###### 건강 상태 모니터링
-
+<table>
+  <tr>
+    <td colspan="2" align="center">
+      <h4>건강 상태 모니터링</h4>
+    </td>
+  </tr>
+  <tr>
+    <td width="60%">
+      <img src="https://github.com/user-attachments/assets/efb45bf9-3347-4643-8df1-94d122e18776" width=100%" />
+    </td>
+    <td width="20%">
+      <ul>
+        <li></li>
+      </ul>
+    </td>
+  </tr>
+</table>
+<h5></h5>
 
 <hr>
 
 ## 문제 상황 및 해결 방안
 #### 주행
 
-#### AI
+#### 대화
 
 #### 건강 상태 모니터링
 
