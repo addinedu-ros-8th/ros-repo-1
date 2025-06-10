@@ -257,7 +257,6 @@ Run the main script:
       <h4>기본 주행</h4>
     </td>
   </tr>
-  
   <tr>
     <td width="60%">
       <img src="https://github.com/user-attachments/assets/0e9d1402-5ec5-4922-84d8-1bb181895a3b" width="100%" />
@@ -284,22 +283,35 @@ Run the main script:
       <img src="https://github.com/user-attachments/assets/ee81e78f-f006-4bbf-972c-cc0b064256e7" width="100%" />
     </td>
     <td width="20%" rowspan="2">
+      지정 된 시간에 정해진 루트를 따라서 순찰 진행
       <ul>
-        <li></li>
+        <li>시간은 User GUI에서 설정 가능</li>
+        <li>검은 색 점으로 표시 된 부분은 Way Point로 중간 목표 지점</li>
+        <li>주황색 테두리 부분은 인원 체크 지점으로 블루투스로 인원 체크하는 지점</li>
+        <li>네모 박스 표시 부분은 침대가 있는 부분</li>
       </ul>
     </td>
     <td width="40%">
       <img src="https://github.com/user-attachments/assets/3ad9e6fa-a297-4f33-993e-0c5191e5ec65" width="100%" />
+      인원 체크 지점 도달 시 어르신들 워치에서 쏘고 있는 블루투스 신호를 통해 인원 확인
       <ul>
-        <li></li>
+        <li>확인 되지 않는 인원이 존재하면 알림</li>
+        <li>알림 후, 혹은 이상 없다고 판단 후에 순찰 지속</li>
       </ul>
     </td>
   </tr>
   <tr>
     <td>
       <img src="https://github.com/user-attachments/assets/b945e7ae-e366-45cb-b65e-2b56ba349cf2" width"100%" />
+      위험 상황 감지
       <ul>
-        <li></li>
+        <li>위험 상황 감지 후 사용자 GUI로 위험 상황 요양보호사에게 알림</li>
+        <li>위험 상황 종류
+          <ul>
+            <li>화재</li>
+            <li>쓰러짐</li>
+          </ul>
+        </li>
       </ul>
     </td>
   </tr>
@@ -320,7 +332,16 @@ Run the main script:
     </td>
     <td width="40%">
       <ul>
-        <li></li>
+        <li>요양보호사는 필요에 따라 지정된 위치에 QR 코드, 혹은 GUI를 통해 로봇 호출</li>
+        <li>로봇이 호출 될 시, 호출 된 지점으로 로봇이 이동 한 후 요양보호사가 지정하는 작업 진행</li>
+        <li>
+          호출 가능 위치
+          <ul>
+            <li>요양보호사 작업실</li>
+            <li>침실 1</li>
+            <li>침실 2</li>
+          </ul>
+        </li>
       </ul>
     </td>
   </tr>
@@ -339,8 +360,13 @@ Run the main script:
       <img src="https://github.com/user-attachments/assets/ddcf1ea9-1d75-4dae-958d-79f7cd729c50" width=100%" />
     </td>
     <td width="40%">
+      등록 된 스케줄에 따라 산책 진행
       <ul>
-        <li></li>
+        <li>등록 된 시간이 되면 산책 스케줄이 지정 된 어르신의 침대로 이동</li>
+        <li>대상자 확인 후 의사 물어봄</li>
+        <li>어르신이 승낙하면 정해진 경로로 산책 진행</li>
+        <li>어르신이 거부하면 3번 다시 물어본 후 전부 다 거부할 시 로그 남겨두고 산책 진행 종료</li>
+        <li>산책 진행 후 대상 어르신의 침대로 도달, 혹은 3번의 물음에 거부 의사 표현 시, 산책 종료로 인식 후 대기 상태로 전환하고 충전 스테이션으로 복귀</li>
       </ul>
     </td>
   </tr>
@@ -359,8 +385,12 @@ Run the main script:
       <img src="https://github.com/user-attachments/assets/0e7516fb-a4b7-4321-ac0f-71b97e78d7d5" width=100%" />
     </td>
     <td width="40%">
+      어르신이 대화하고 싶은 경우에 호출하여 대화 진행
       <ul>
-        <li></li>
+        <li>어르신이 호출하면 호출한 어르신의 침대로 이동</li>
+        <li>호출한 어르신이 "누리야"하고 트리거 워드 말하면 대화 상태로 전환</li>
+        <li>대화 진행 하다 어르신이 종료 의사 내비치면 대화 종료로 인식</li>
+        <li>대화 종료 멘트 출력 후, 대기 상태로 전환하고 충전 스테이션으로 복귀</li>
       </ul>
     </td>
   </tr>
@@ -404,10 +434,10 @@ Run the main script:
 ## TEAM. BLACK PIG
 | position | name | job | contacts |
 |:-----:|------|-----|-----|
-| leader | 이정림 | 프로젝트 설계<br>유저 디바이스 구현<br>PPT 제작<br>GitHub README 작성 | jeongliml2002@gmail.com |
-| worker | 심재헌 | 프로젝트 설계<br>주행 구현<br>PPT 제작 | sysbmy905@gmail.com |
-| worker | 황한문 | 비상상황 감지 구현<br>Human Following 구현<br>AI Server 구현<br>GitHub README 작성 | hhm9124@gmail.com |
-| worker | 신동철 | 통신 설계<br>Main Server 구현<br>주행 구현<br>PPT 제작 | lt00104@gmail.com |
+| leader | 이정림 | 프로젝트 설계<br>유저 디바이스 구현<br>PPT 제작<br>GitHub README 작성 | [JlimL(LeeJ)](https://github.com/JlimL) <br> [jeongliml2002@gmail.com](mailto:jeongliml2002@gmail.com) |
+| worker | 심재헌 | 프로젝트 설계<br>주행 구현<br>PPT 제작 | [jaeheon7134(jaeheon)](https://github.com/jaeheon7134) <br> [sysbmy905@gmail.com](mailto:sysbmy905@gmail.com) |
+| worker | 황한문 | 비상상황 감지 구현<br>Human Following 구현<br>AI Server 구현<br>GitHub README 작성 | [1-moon(H.M. Hwang/1-moon😆](https://github.com/1-moon) <br> [hhm9124@gmail.com](mailto:hhm9124@gmail.com) |
+| worker | 신동철 | 통신 설계<br>Main Server 구현<br>주행 구현<br>PPT 제작 | [copper-iron(Shin)](https://github.com/copper-iron) <br> [lt00104@gmail.com](mailto:lt00104@gmail.com) |
 
 <hr>
 
