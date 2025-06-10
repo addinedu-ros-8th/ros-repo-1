@@ -410,24 +410,120 @@ Run the main script:
       <img src="https://github.com/user-attachments/assets/efb45bf9-3347-4643-8df1-94d122e18776" width=100%" />
     </td>
     <td width="20%">
+      어르신들의 건강 상태 체크 및 확인
       <ul>
-        <li></li>
+        <li>심박수 측정</li>
+        <li>산소 포화도 측정</li>
+        <li>체온 측정</li>
+        <li>센서 값 유효성 확인</li>
+        <li>OLED에 심박수, 체온, 센서 값 유효성 출력</li>
       </ul>
     </td>
   </tr>
 </table>
-<h5>OLED</h5>
-<h5>MAX30105</h5>
-<h5>MLX90614</h5>
+
+**OLED**
+
+**MAX30105**
+[Datasheet](https://www.analog.com/media/en/technical-documentation/data-sheets/max30102.pdf)                          
+<table>
+  <tr>
+    <td width="40%">
+      <img src="https://github.com/user-attachments/assets/62e43082-c907-40f7-a05b-1483063edf05" width="100%" />
+    </td>
+    <td width="60%">
+      집적 펄스 산소 측정 및 심박수 모니터 모듈<br>
+      통신은 표준 I2C 호환 인터페이스 사용
+      <ul>
+        <li>LED 반사 솔루션의 심박수 모니터 및 펄스 산소 농도계 센서</li>
+        <li>소형 5.6mm x 3.3mm x 1.55mm 14핀 광학 모듈</li>
+        <li>최적의 견고한 성능을 위해 통합된 덮개 유리</li>
+        <li>모바일 기기용 초저전력 작동</li>
+        <li>프로그래밍 가능 샘플 레이트 및 전력 절감을 위한 LED 전류</li>
+        <li>저전력 심박수 모니터(1mW 미만)</li>
+        <li>초저 차단 전류(0.7μA, 표준)</li>
+        <li>빠른 데이터 출력 기능</li>
+        <li>높은 샘플 추출 비율</li>
+        <li>견고한 모션 인공 탄력</li>
+        <li>고 SNR</li>
+        <li>작동 온도 범위: -40~+85°C</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+**MLX90614**
+[Datasheet](https://www.melexis.com/-/media/files/documents/datasheets/mlx90614-datasheet-melexis.pdf)                            
+<table>
+  <tr>
+    <td width="40%">
+      <img src="https://github.com/user-attachments/assets/2337c9f9-97c3-4f18-ac6c-49c92b6f3f70" width="100%" />
+    </td>
+    <td width="60%">
+      근거리 물체에서 방출되는 적외선을 통해 온도 측정<br>
+      마이크로 컨트롤 보드와 연결 해 I2C 통신 방식으로 동작
+      <ul>
+        <li>작동 온도 범위: -40~+125°C</li>
+        <li>측정 온도 범위: -70~+380°C</li>
+        <li>오차범위 0.5°C, 분해능 0.02°C</li>
+        <li>교육용 혹은 테스트용으로 적합</li>
+        <li>양산용 비적합</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+# GUI 내용 첨부
 
 <hr>
 
 ## 문제 상황 및 해결 방안
-#### 주행
-
-#### 대화
-
-#### 건강 상태 모니터링
+<table>
+  <tr>
+    <td width="40%" align="center">
+      <strong>문제 상황</strong>
+    </td>
+    <td width="60%" align="center">
+      <strong>해결 방안</strong>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <h4>문제 제목</h4>
+      문제 상황 상세 설명
+    </td>
+    <td>
+      <h4>문제 원인</h4>
+      원인 상세 설명
+      <h4>해결</h4>
+      해결 방안 상세 설명
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <h4>문제 제목</h4>
+      문제 상황 상세 설명
+    </td>
+    <td>
+      <h4>문제 원인</h4>
+      원인 상세 설명
+      <h4>해결</h4>
+      해결 방안 상세 설명
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <h4>문제 제목</h4>
+      문제 상황 상세 설명
+    </td>
+    <td>
+      <h4>문제 원인</h4>
+      원인 상세 설명
+      <h4>해결</h4>
+      해결 방안 상세 설명
+    </td>
+  </tr>
+</table>
 
 <hr>
 
